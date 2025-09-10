@@ -4,48 +4,56 @@
   <meta charset="UTF-8">
   <title>Авторизація / Реєстрація</title>
   <link rel="stylesheet" href="../css/auth.css">
-
 </head>
 <body>
-
-  <div class="container">
-
-    <!-- Меню -->
-    <div id="menu">
-      <button onclick="showLogin()">Увійти</button>
-      <button onclick="showRegister()">Зареєструватися</button>
-    </div>
-
-    <!-- 🔐 Логін -->
-    <div id="loginForm" style="display:none;">
-      <h2>Вхід</h2>
-      <form onsubmit="loginUser(event)">
-        <input type="email" id="loginEmail" placeholder="Email" required>
-        <input type="password" id="loginPassword" placeholder="Пароль" required>
-        <div class="checkbox-label">
-          <input type="checkbox" id="rememberMe">
-          <label for="rememberMe">Запам’ятати мене</label>
-        </div>
-        <button type="submit">Увійти</button>
-      </form>
-      <button class="toggle-btn" onclick="showRegister()">Ще не має акаунту?</button>
-    </div>
-
-    <!-- 📝 Реєстрація -->
-    <div id="registerForm" style="display:none;">
-      <h2>Реєстрація</h2>
-      <form onsubmit="registerUser(event)">
-        <input type="email" id="regEmail" placeholder="Email" required>
-        <input type="password" id="regPassword" placeholder="Пароль" required>
-        <input type="password" id="regRepeatPassword" placeholder="Повторити пароль" required>
-        <button type="submit">Зареєструватися</button>
-      </form>
-      <button class="toggle-btn" onclick="showLogin()">Вже є акаунт?</button>
-    </div>
-
+<div class="container">
+  <!-- Меню -->
+  <div id="menu">
+    <button onclick="showLogin()">Увійти</button>
+    <button onclick="showRegister()">Зареєструватися</button>
   </div>
 
-  <!-- 🔗 JS -->
-  <script src="../js/auth.js"></script>
+  <!-- 🔐 Логін -->
+  <div id="loginForm" style="display:none;">
+    <h2>Вхід</h2>
+    <form onsubmit="loginUser(event)">
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginPassword" placeholder="Пароль" required>
+      <div class="checkbox-label">
+        <input type="checkbox" id="rememberMe">
+        <label for="rememberMe">Запам’ятати мене</label>
+      </div>
+      <button type="submit">Увійти</button>
+    </form>
+    <button class="toggle-btn" onclick="showRegister()">Ще не має акаунту?</button>
+  </div>
+
+  <!-- 📝 Реєстрація -->
+  <div id="registerForm" style="display:none;">
+    <h2>Реєстрація</h2>
+    <form onsubmit="registerUser(event)">
+      <input type="email" id="regEmail" placeholder="Email" required>
+      <input type="password" id="regPassword" placeholder="Пароль" required>
+      <input type="password" id="regRepeatPassword" placeholder="Повторити пароль" required>
+      <input type="text" id="regFirstName" placeholder="Ім'я">
+      <input type="text" id="regLastName" placeholder="Прізвище">
+      <input type="text" id="regPhoneNumber" placeholder="Телефон">
+
+      <select id="regDepartmentName" required>
+        <option value="" disabled selected>Оберіть департамент</option>
+        <option value="Черепашки-ніндзя">Черепашки-ніндзя</option>
+        <option value="R.E.D">R.E.D</option>
+        <option value="Неко-Неко">Неко-Неко</option>
+        <option value="Соколи">Соколи</option>
+      </select>
+
+      <button type="submit">Зареєструватися</button>
+    </form>
+    <button class="toggle-btn" onclick="showLogin()">Вже є акаунт?</button>
+  </div>
+</div>
+
+<!-- 🔗 JS -->
+<script src="../js/auth.js"></script>
 </body>
 </html>
