@@ -93,7 +93,6 @@ async function loginUser(event) {
      const storage = rememberMe ? localStorage : sessionStorage;
      storage.setItem('token', data.token); // 🔐 Зберігаємо токен
 
-     alert("✅ Успішний вхід");
      window.location.href = '../html/user/userdeshboard.html'; // 👈 Перехід до кабінету
    }
     else {
