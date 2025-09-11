@@ -93,7 +93,7 @@ async function loginUser(event) {
      const storage = rememberMe ? localStorage : sessionStorage;
      storage.setItem('token', data.token); // 🔐 Зберігаємо токен
 
-     window.location.href = '../html/user/userdeshboard.html'; // 👈 Перехід до кабінету
+     window.location.href = '../html/user/user_dashboard_ui.html'; // 👈 Перехід до кабінету
    }
     else {
       alert("❌ Невірний логін або пароль");

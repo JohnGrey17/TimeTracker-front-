@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>USER DASHBOARD</title>
+    <link rel="stylesheet" href="../../css/user/userdashboard.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>USER DESH BOARD</h1>
+        <div class="logout">
+            <button onclick="logout()">LOGOUT</button>
+            <div class="email-display" id="userEmail">user@example.com</div>
+        </div>
+    </header>
+
+    <main class="grid">
+        <section class="card">
+            <h3><span class="icon">🕓</span> OverTime</h3>
+            <div class="form-section" id="overtimeSection">
+                <label>Дата:
+                    <input type="date" id="overtimeDate">
+                </label>
+                <label><input type="checkbox" onclick="setToday('overtimeDate')"> сьогодні</label>
+                <label>Опис:
+                    <input type="text" id="overtimeDesc">
+                </label>
+                <label>Години:
+                    <input type="number" id="overtimeHours" step="0.1">
+                </label>
+                <button onclick="submitOvertime()">Надіслати</button>
+            </div>
+            <button onclick="toggleSection('overtimeSection')">Розгорнути</button>
+        </section>
+
+        <section class="card">
+            <h3><span class="icon">😴</span> missingDay</h3>
+            <div class="form-section" id="missingSection">
+                <label>Причина:
+                    <input type="text" id="missingReason">
+                </label>
+                <label>Дата:
+                    <input type="date" id="missingDate">
+                </label>
+                <label><input type="checkbox" onclick="setToday('missingDate')"> сьогодні</label>
+                <label>Години:
+                    <input type="number" id="missingHours" step="0.1">
+                </label>
+                <button onclick="submitMissing()">Надіслати</button>
+            </div>
+            <button onclick="toggleSection('missingSection')">Розгорнути</button>
+        </section>
+
+        <section class="card">
+            <h3><span class="icon">📅</span> view list</h3>
+            <p>In progress</p>
+        </section>
+
+        <section class="card">
+            <h3><span class="icon">⚙️</span> setting</h3>
+            <p>In progress</p>
+        </section>
+    </main>
+</div>
+<script src="../../js/dashboard/userdashboard.js"></script>
+</body>
+</html>
