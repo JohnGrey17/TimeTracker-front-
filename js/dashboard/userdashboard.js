@@ -1,5 +1,12 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
+const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+if (!token) {
+    alert('⛔ Ви не авторизовані!');
+    window.location.href = '../../html/auth.html';
+}
+
+// 🔁 toggle
 function toggleSection(id) {
     const el = document.getElementById(id);
     el.classList.toggle('show');
@@ -22,20 +29,28 @@ function submitOvertime() {
         description: document.getElementById('overtimeDesc').value,
         overtime_hours: parseFloat(document.getElementById('overtimeHours').value)
     };
-    console.log("Overtime payload:", payload);
+
     fetch(`${API_BASE_URL}/over-time/add`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem('token')
+            'Authorization': 'Bearer ' + token
         },
         body: JSON.stringify(payload)
     }).then(resp => {
-        console.log("Response:", resp);
-        alert('Overtime submitted!');
+        if (resp.status === 401) {
+            alert('⛔ Сесія завершена. Авторизуйтесь знову.');
+            window.location.href = '../../html/auth.html';
+            return;
+        }
+        if (!resp.ok) {
+            alert('❌ Не вдалося надіслати запит');
+            return;
+        }
+        alert('✅ OverTime надіслано!');
     }).catch(err => {
         console.error("❌ Error submitting overtime:", err);
-        alert('Помилка при надсиланні!');
+        alert('❌ Помилка при надсиланні!');
     });
 }
 
@@ -45,19 +60,27 @@ function submitMissing() {
         date: document.getElementById('missingDate').value,
         missingHours: parseFloat(document.getElementById('missingHours').value)
     };
-    console.log("Missing payload:", payload);
+
     fetch(`${API_BASE_URL}/missing-hours/add`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem('token')
+            'Authorization': 'Bearer ' + token
         },
         body: JSON.stringify(payload)
     }).then(resp => {
-        console.log("Response:", resp);
-        alert('Missing day submitted!');
+        if (resp.status === 401) {
+            alert('⛔ Сесія завершена. Авторизуйтесь знову.');
+            window.location.href = '../../html/auth.html';
+            return;
+        }
+        if (!resp.ok) {
+            alert('❌ Не вдалося надіслати запит');
+            return;
+        }
+        alert('✅ Missing day надіслано!');
     }).catch(err => {
         console.error("❌ Error submitting missing day:", err);
-        alert('Помилка при надсиланні!');
+        alert('❌ Помилка при надсиланні!');
     });
 }

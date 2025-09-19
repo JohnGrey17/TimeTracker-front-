@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <title>Авторизація / Реєстрація</title>
   <link rel="stylesheet" href="../css/auth.css">
+  <style>
+    .error {
+      border: 2px solid red !important;
+      background-color: #ffe6e6;
+    }
+  </style>
 </head>
 <body>
 <div class="container">
@@ -13,7 +19,7 @@
     <button onclick="showRegister()">Зареєструватися</button>
   </div>
 
-  <!-- 🔐 Логін -->
+  <!-- Логін -->
   <div id="loginForm" style="display:none;">
     <h2>Вхід</h2>
     <form onsubmit="loginUser(event)">
@@ -28,18 +34,18 @@
     <button class="toggle-btn" onclick="showRegister()">Ще не має акаунту?</button>
   </div>
 
-  <!-- 📝 Реєстрація -->
+  <!-- Реєстрація -->
   <div id="registerForm" style="display:none;">
     <h2>Реєстрація</h2>
     <form onsubmit="registerUser(event)">
-      <input type="email" id="regEmail" placeholder="Email" required>
-      <input type="password" id="regPassword" placeholder="Пароль" required>
-      <input type="password" id="regRepeatPassword" placeholder="Повторити пароль" required>
+      <input type="email" id="regEmail" placeholder="Email">
+      <input type="password" id="regPassword" placeholder="Пароль">
+      <input type="password" id="regRepeatPassword" placeholder="Повторити пароль">
       <input type="text" id="regFirstName" placeholder="Ім'я">
       <input type="text" id="regLastName" placeholder="Прізвище">
-      <input type="text" id="regPhoneNumber" placeholder="Телефон">
+      <input type="text" id="regPhoneNumber" placeholder="+38...">
 
-      <select id="regDepartmentName" required>
+      <select id="regDepartmentName">
         <option value="" disabled selected>Оберіть департамент</option>
         <option value="Черепашки-ніндзя">Черепашки-ніндзя</option>
         <option value="R.E.D">R.E.D</option>
@@ -53,7 +59,6 @@
   </div>
 </div>
 
-<!-- 🔗 JS -->
 <script src="../js/auth.js"></script>
 </body>
 </html>

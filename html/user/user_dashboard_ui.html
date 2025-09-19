@@ -23,7 +23,7 @@
                     <input type="date" id="overtimeDate">
                 </label>
                 <label><input type="checkbox" onclick="setToday('overtimeDate')"> сьогодні</label>
-                <label>Опис:
+                <label>Що було зроблено ?:
                     <input type="text" id="overtimeDesc">
                 </label>
                 <label>Години:
@@ -37,13 +37,14 @@
         <section class="card">
             <h3><span class="icon">😴</span> missingDay</h3>
             <div class="form-section" id="missingSection">
-                <label>Причина:
-                    <input type="text" id="missingReason">
-                </label>
                 <label>Дата:
                     <input type="date" id="missingDate">
                 </label>
                 <label><input type="checkbox" onclick="setToday('missingDate')"> сьогодні</label>
+                <label>Причина:
+                    <input type="text" id="missingReason">
+                </label>
+
                 <label>Години:
                     <input type="number" id="missingHours" step="0.1">
                 </label>
