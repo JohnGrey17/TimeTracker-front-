@@ -92,14 +92,13 @@ async function loadCalendar(year, month) {
 
   // Overtime
   overtimeData.forEach(o => {
-    // овертайм: LocalDate у JSON вже "YYYY-MM-DD"
-    const key = o.overTimeDateRegistrationTime;
-    map[key] = {
-      type: 'overtime',
-      desc: o.description,
-      hours: o.overtimeHoursCount
-    };
-  });
+  const key = o.overTimeDateRegistration; // LocalDate як "2025-09-23"
+  map[key] = {
+    type: 'overtime',
+    desc: o.description,
+    hours: o.overtimeHours
+  };
+});
 
   // Missing days
   missingData.forEach(m => {
