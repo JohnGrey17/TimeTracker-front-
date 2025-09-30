@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>View List</title>
+  <link rel="stylesheet" href="/css/admin/admin_viewList.css">
+</head>
+<body>
+  <header>
+    <div class="title-block">
+      <h1>📅 Календар</h1>
+      <a href="admin_dashboard_ui.html" class="back-link">⬅ Назад</a>
+    </div>
+    <div class="controls">
+      <label for="yearSelect">Рік:</label>
+      <select id="yearSelect"></select>
+      <label for="monthSelect">Місяць:</label>
+      <select id="monthSelect"></select>
+    </div>
+  </header>
+
+  <section class="calendar-container">
+    <div class="weekdays">
+      <div>Пн</div>
+      <div>Вт</div>
+      <div>Ср</div>
+      <div>Чт</div>
+      <div>Пт</div>
+      <div>Сб</div>
+      <div>Нд</div>
+    </div>
+    <main id="calendar" class="calendar"></main>
+  </section>
+
+  <!-- Модальне вікно -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <span id="closeModal">&times;</span>
+      <h2 id="modalDate"></h2>
+      <p id="modalInfo"></p>
+    </div>
+  </div>
+
+  <script src="/js/dashboard/admin/admin_viewList.js"></script>
+</body>
+</html>

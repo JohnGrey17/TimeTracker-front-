@@ -1,0 +1,105 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #fef6e4;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    padding: 0;
+}
+
+header {
+    background-color: #f4a261;
+    color: black;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+}
+
+.logout {
+    background-color: hotpink;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+main.grid {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.card {
+    background-color: #ffe0a3;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+    position: relative;
+}
+
+.card:hover {
+    transform: scale(1.02);
+}
+
+/* Іконка по центру */
+.card h3 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.card .icon {
+    font-size: 20px;
+}
+
+/* Анімоване розгортання */
+.form-section {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.4s ease;
+    margin-top: 10px;
+}
+
+.form-section.show {
+    max-height: 500px;
+    opacity: 1;
+}
+
+/* Стилізація інпутів */
+.form-section label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.form-section input[type="text"],
+.form-section input[type="number"],
+.form-section input[type="date"] {
+    width: 100%;
+    padding: 5px;
+    margin-top: 3px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.form-section button {
+    padding: 6px 12px;
+    background-color: #f4a261;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.form-section button:hover {
+    background-color: #e76f51;
+    color: white;
+}

@@ -2,20 +2,25 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>USER DASHBOARD</title>
-    <link rel="stylesheet" href="../../css/user/userdashboard.css">
+    <title>ADMIN DASHBOARD</title>
+    <link rel="stylesheet" href="../../css/admin/admin_dashboard.css">
 </head>
 <body>
 <div class="container">
     <header>
-        <h1>USER DESH BOARD</h1>
+        <h1>ADMIN DASHBOARD</h1>
+        <nav class="menu">
+            <a href="admin_dashboard_ui.html">🏠 Головна</a>
+            <a href="contacts.html">📇 Контакти</a>
+        </nav>
         <div class="logout">
             <button onclick="logout()">LOGOUT</button>
-            <div class="email-display" id="userEmail">user@example.com</div>
+            <div class="email-display" id="userEmail">admin@example.com</div>
         </div>
     </header>
 
     <main class="grid">
+        <!-- OverTime -->
         <section class="card">
             <h3><span class="icon">🕓</span> OverTime</h3>
             <div class="form-section" id="overtimeSection">
@@ -34,8 +39,10 @@
             <button onclick="toggleSection('overtimeSection')">Розгорнути</button>
         </section>
 
+       
+        <!-- Missing Day -->
         <section class="card">
-            <h3><span class="icon">😴</span> missingDay</h3>
+            <h3><span class="icon">😴</span> Missing Day</h3>
             <div class="form-section" id="missingSection">
                 <label>Дата:
                     <input type="date" id="missingDate">
@@ -44,7 +51,6 @@
                 <label>Причина:
                     <input type="text" id="missingReason">
                 </label>
-
                 <label>Години:
                     <input type="number" id="missingHours" step="0.1">
                 </label>
@@ -53,20 +59,29 @@
             <button onclick="toggleSection('missingSection')">Розгорнути</button>
         </section>
 
+        <!-- Over Time CRM -->
         <section class="card">
-            <h3><span class="icon">📅</span> calendar</h3>
-             <a href="/html/user/viewList.html">
-                   <button>Переглянути</button>
-                        </a>
-                        </section>
+            <h3><span class="icon">📅</span> Over Time CRM</h3>
+            <a href="/html/admin/admin_viewList.html">
+                <button>Переглянути</button>
+            </a>
+        </section>
 
-
+         <!-- Contacts -->
         <section class="card">
-            <h3><span class="icon">⚙️</span> setting</h3>
+            <h3><span class="icon">📇</span> Contacts</h3>
+            <a href="contacts.html">
+                <button>Переглянути контакти</button>
+            </a>
+        </section>
+
+        <!-- Settings -->
+        <section class="card">
+            <h3><span class="icon">⚙️</span> Setting</h3>
             <p>In progress</p>
         </section>
     </main>
 </div>
-<script src="../../js/dashboard/userdashboard.js"></script>
+<script src="../../js/dashboard/admin/admin_dashboard.js"></script>
 </body>
 </html>

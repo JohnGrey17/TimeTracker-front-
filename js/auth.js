@@ -23,8 +23,18 @@ async function loginUser(event) {
 
     const data = await res.json();
     localStorage.setItem("token", data.token);
+    localStorage.setItem("roles", JSON.stringify(data.roles));
+
     alert("✅ Успішний вхід!");
-    window.location.href = "../html/user/user_dashboard_ui.html";
+
+
+const roles = data.roles; 
+
+if (roles.includes("ADMIN")) {
+  window.location.href = "../html/admin/admin_dashboard_ui.html";
+} else {
+  window.location.href = "../html/user/user_dashboard_ui.html";
+}
   } catch (e) {
     console.error("❌ Login error:", e);
     alert("Не вдалося увійти");
