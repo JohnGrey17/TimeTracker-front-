@@ -113,6 +113,26 @@ header {
   border-radius: 4px;
 }
 
+/* "+" кнопка */
+.add-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #4caf50;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+.add-btn:hover {
+  background: #388e3c;
+}
+
 /* Modal */
 .modal.hidden { display: none; }
 .modal {
@@ -128,7 +148,8 @@ header {
   max-width: 90%;
   position: relative;
 }
-#closeModal {
+#closeModal,
+#closeAddModal {
   position: absolute;
   top: 8px;
   right: 10px;

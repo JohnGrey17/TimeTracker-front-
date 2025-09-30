@@ -16,6 +16,17 @@ const modalDate   = document.getElementById('modalDate');
 const modalInfo   = document.getElementById('modalInfo');
 const closeModal  = document.getElementById('closeModal');
 
+// DOM для модалки "додати"
+const addModal = document.getElementById('addModal');
+const closeAddModal = document.getElementById('closeAddModal');
+const addModalDate = document.getElementById('addModalDate');
+const entryType = document.getElementById('entryType');
+const entryReason = document.getElementById('entryReason');
+const entryHours = document.getElementById('entryHours');
+const saveEntryBtn = document.getElementById('saveEntryBtn');
+
+let selectedDate = null;
+
 // Поточні значення
 const now          = new Date();
 const currentYear  = now.getFullYear();
@@ -23,9 +34,7 @@ const currentMonth = now.getMonth() + 1;
 
 // ===== Helpers =====
 function isoDate(y, m, d) {
-  // Створюємо локальний Date і перетворюємо у YYYY-MM-DD
   const dt = new Date(y, m - 1, d);
-  // Зсув таймзони, щоб уникнути "зсуву" дати при toISOString()
   dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
   return dt.toISOString().split('T')[0];
 }
@@ -75,10 +84,9 @@ async function loadCalendar(year, month) {
   calendarEl.innerHTML = '';
 
   const daysInMonth = new Date(year, month, 0).getDate();
-  const firstDay    = new Date(year, month - 1, 1).getDay(); // 0=Нд, 1=Пн...
-  const offset      = (firstDay === 0 ? 6 : firstDay - 1);   // Пн-перший стовпець
+  const firstDay    = new Date(year, month - 1, 1).getDay();
+  const offset      = (firstDay === 0 ? 6 : firstDay - 1);
 
-  // — Дані з бекенду —
   const overtimeUrl = `${API_BASE_URL}/over-time/getBy/month?year=${year}&month=${month}`;
   const missingUrl  = `${API_BASE_URL}/missing-hours/getBy/month?year=${year}&month=${month}`;
 
@@ -87,20 +95,17 @@ async function loadCalendar(year, month) {
     getJson(missingUrl)
   ]);
 
-  // Зведена мапа подій за датою YYYY-MM-DD
   const map = Object.create(null);
 
-  // Overtime
   overtimeData.forEach(o => {
-  const key = o.overTimeDateRegistration; // LocalDate як "2025-09-23"
-  map[key] = {
-    type: 'overtime',
-    desc: o.description,
-    hours: o.overtimeHours
-  };
-});
+    const key = o.overTimeDateRegistration;
+    map[key] = {
+      type: 'overtime',
+      desc: o.description,
+      hours: o.overtimeHours
+    };
+  });
 
-  // Missing days
   missingData.forEach(m => {
     const key = m.date;
     map[key] = {
@@ -110,14 +115,12 @@ async function loadCalendar(year, month) {
     };
   });
 
-  // Порожні клітинки до 1-го числа
   for (let i = 0; i < offset; i++) {
     const emptyCell = document.createElement('div');
     emptyCell.className = 'day empty';
     calendarEl.appendChild(emptyCell);
   }
 
-  // Дні місяця
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = isoDate(year, month, d);
 
@@ -129,13 +132,11 @@ async function loadCalendar(year, month) {
     if (item) {
       cell.classList.add(item.type);
 
-      // бейдж з годинами
       const badge = document.createElement('div');
       badge.className = 'badge';
       badge.textContent = `${item.hours} год`;
       cell.appendChild(badge);
 
-      // модалка
       cell.onclick = () => {
         modalDate.textContent = dateStr;
         modalInfo.textContent = `${item.desc} (${item.hours} год)`;
@@ -143,9 +144,77 @@ async function loadCalendar(year, month) {
       };
     }
 
+    // Кнопка "+"
+    const addBtn = document.createElement('div');
+    addBtn.className = 'add-btn';
+    addBtn.textContent = '+';
+    addBtn.onclick = (e) => {
+      e.stopPropagation();
+      openAddModal(dateStr);
+    };
+    cell.appendChild(addBtn);
+
     calendarEl.appendChild(cell);
   }
 }
+
+// ===== Модалка додавання =====
+function openAddModal(dateStr) {
+  selectedDate = dateStr;
+  addModalDate.textContent = `📅 ${dateStr}`;
+  entryReason.value = '';
+  entryHours.value = '';
+  entryType.value = 'overtime';
+  addModal.classList.remove('hidden');
+}
+
+closeAddModal.onclick = () => addModal.classList.add('hidden');
+
+saveEntryBtn.onclick = async () => {
+  const type = entryType.value;
+  const hours = parseFloat(entryHours.value);
+  const reason = entryReason.value;
+
+  if (!hours || hours <= 0) {
+    alert('❌ Вкажіть кількість годин!');
+    return;
+  }
+
+  if (type === 'overtime') {
+    const payload = {
+      overTimeDateRegistration: selectedDate,
+      description: reason || "Overtime",
+      overtime_hours: hours
+    };
+    await fetch(`${API_BASE_URL}/over-time/add`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(payload)
+    });
+    alert('✅ Overtime збережено!');
+  } else {
+    const payload = {
+      reason: reason || "Відсутність",
+      date: selectedDate,
+      missingHours: hours
+    };
+    await fetch(`${API_BASE_URL}/missing-hours/add`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(payload)
+    });
+    alert('✅ Missing Day збережено!');
+  }
+
+  addModal.classList.add('hidden');
+  loadCalendar(parseInt(yearSelect.value), parseInt(monthSelect.value));
+};
 
 // ===== Події =====
 initYears();
