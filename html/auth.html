@@ -1,64 +1,45 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <title>Авторизація / Реєстрація</title>
-  <link rel="stylesheet" href="../css/auth.css">
-  <style>
-    .error {
-      border: 2px solid red !important;
-      background-color: #ffe6e6;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <title>Auth</title>
+  <link rel="stylesheet" href="../css/auth.css" />
 </head>
 <body>
-<div class="container">
-  <!-- Меню -->
-  <div id="menu">
-    <button onclick="showLogin()">Увійти</button>
-    <button onclick="showRegister()">Зареєструватися</button>
+  <div class="auth-container">
+    <!-- ЛОГІН -->
+    <div id="loginForm">
+      <h2>Вхід</h2>
+      <form onsubmit="loginUser(event)">
+        <input type="email" id="loginEmail" placeholder="Email" required />
+        <input type="password" id="loginPassword" placeholder="Пароль" required />
+        <button type="submit">Увійти</button>
+      </form>
+      <p>Немає акаунту? <a href="#" onclick="showRegister()">Зареєструватися</a></p>
+    </div>
+
+    <!-- РЕЄСТРАЦІЯ -->
+    <div id="registerForm" style="display:none;">
+      <h2>Реєстрація</h2>
+      <form onsubmit="registerUser(event)">
+        <input type="text" id="regFirstName" placeholder="Ім'я" required />
+        <input type="text" id="regLastName" placeholder="Прізвище" required />
+        <input type="email" id="regEmail" placeholder="Email" required />
+        <input type="tel" id="regPhoneNumber" placeholder="Телефон" required />
+        <input type="password" id="regPassword" placeholder="Пароль" required />
+        <input type="password" id="regRepeatPassword" placeholder="Повторіть пароль" required />
+
+        <!-- Департаменти з бекенду -->
+        <select id="regDepartment" required>
+          <option value="" disabled selected>Оберіть департамент</option>
+        </select>
+
+        <button type="submit">Зареєструватися</button>
+      </form>
+      <p>Вже є акаунт? <a href="#" onclick="showLogin()">Увійти</a></p>
+    </div>
   </div>
 
-  <!-- Логін -->
-  <div id="loginForm" style="display:none;">
-    <h2>Вхід</h2>
-    <form onsubmit="loginUser(event)">
-      <input type="email" id="loginEmail" placeholder="Email" required>
-      <input type="password" id="loginPassword" placeholder="Пароль" required>
-      <div class="checkbox-label">
-        <input type="checkbox" id="rememberMe">
-        <label for="rememberMe">Запам’ятати мене</label>
-      </div>
-      <button type="submit">Увійти</button>
-    </form>
-    <button class="toggle-btn" onclick="showRegister()">Ще не має акаунту?</button>
-  </div>
-
-  <!-- Реєстрація -->
-  <div id="registerForm" style="display:none;">
-    <h2>Реєстрація</h2>
-    <form onsubmit="registerUser(event)">
-      <input type="email" id="regEmail" placeholder="Email">
-      <input type="password" id="regPassword" placeholder="Пароль">
-      <input type="password" id="regRepeatPassword" placeholder="Повторити пароль">
-      <input type="text" id="regFirstName" placeholder="Ім'я">
-      <input type="text" id="regLastName" placeholder="Прізвище">
-      <input type="text" id="regPhoneNumber" placeholder="+38...">
-
-      <select id="regDepartmentName">
-        <option value="" disabled selected>Оберіть департамент</option>
-        <option value="Черепашки-ніндзя">Черепашки-ніндзя</option>
-        <option value="R.E.D">R.E.D</option>
-        <option value="Неко-Неко">Неко-Неко</option>
-        <option value="Соколи">Соколи</option>
-      </select>
-
-      <button type="submit">Зареєструватися</button>
-    </form>
-    <button class="toggle-btn" onclick="showLogin()">Вже є акаунт?</button>
-  </div>
-</div>
-
-<script src="../js/auth.js"></script>
+  <script src="../js/auth.js"></script>
 </body>
 </html>

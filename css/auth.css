@@ -1,65 +1,71 @@
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f5f7fa;
+  font-family: 'Segoe UI', sans-serif;
+  background: #fef6e4;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   height: 100vh;
   margin: 0;
 }
 
 .container {
-  background-color: white;
-  padding: 30px 40px;
-  border-radius: 10px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.1);
-  width: 100%;
-  max-width: 400px;
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  width: 350px;
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
+.tabs {
+  display: flex;
+  margin-bottom: 15px;
 }
 
-input[type="email"],
-input[type="password"],
-input[type="text"],
-select {
+.tabs button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: #e0e0e0;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 4px 4px 0 0;
+  transition: 0.3s;
+}
+
+.tabs button.active {
+  background: #f4a261;
+  color: white;
+}
+
+.form {
+  display: none;
+}
+
+.form.active {
+  display: block;
+}
+
+form input, form select {
   width: 100%;
   padding: 10px;
-  margin-bottom: 12px;
+  margin: 8px 0;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 4px;
+  font-size: 14px;
 }
 
-button {
+form button {
   width: 100%;
   padding: 10px;
-  background-color: #007bff;
+  background: #f4a261;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
+  font-size: 16px;
   cursor: pointer;
-  margin-top: 10px;
+  transition: 0.3s;
 }
 
-button:hover {
-  background-color: #0056b3;
-}
-
-.toggle-btn {
-  background-color: transparent;
-  color: #007bff;
-  text-decoration: underline;
-  border: none;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
+form button:hover {
+  background: #e76f51;
 }
