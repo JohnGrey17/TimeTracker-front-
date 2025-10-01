@@ -25,6 +25,9 @@ const entryReason = document.getElementById('entryReason');
 const entryHours = document.getElementById('entryHours');
 const saveEntryBtn = document.getElementById('saveEntryBtn');
 
+// ✅ Summary
+const summaryEl = document.getElementById('summary');
+
 let selectedDate = null;
 
 // Поточні значення
@@ -121,6 +124,10 @@ async function loadCalendar(year, month) {
     calendarEl.appendChild(emptyCell);
   }
 
+  // ✅ лічильники
+  let totalOvertime = 0;
+  let totalMissing = 0;
+
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = isoDate(year, month, d);
 
@@ -142,6 +149,10 @@ async function loadCalendar(year, month) {
         modalInfo.textContent = `${item.desc} (${item.hours} год)`;
         modal.classList.remove('hidden');
       };
+
+      // додаємо в зведення
+      if (item.type === 'overtime') totalOvertime += item.hours;
+      if (item.type === 'missing') totalMissing += item.hours;
     }
 
     // Кнопка "+"
@@ -156,6 +167,9 @@ async function loadCalendar(year, month) {
 
     calendarEl.appendChild(cell);
   }
+
+  // ✅ оновлюємо зведення
+  summaryEl.textContent = `Overtime: ${totalOvertime} год | Missing: ${totalMissing} год`;
 }
 
 // ===== Модалка додавання =====

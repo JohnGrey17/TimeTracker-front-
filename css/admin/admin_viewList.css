@@ -12,6 +12,8 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
 .title-block {
@@ -47,6 +49,7 @@ header {
 
 .controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
 }
@@ -55,10 +58,22 @@ header {
   font-weight: bold;
 }
 
+.controls select {
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.controls input[type="checkbox"] {
+  margin-right: 5px;
+  transform: scale(1.2);
+}
+
 /* Calendar container */
 .calendar-container {
   padding: 20px;
-  max-width: 900px;
+  max-width: 1000px;
   margin: auto;
 }
 
@@ -113,6 +128,39 @@ header {
   border-radius: 4px;
 }
 
+/* multiplier (лівий низ) */
+.day .multiplier {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #333;
+  background: rgba(255,255,255,0.6);
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+/* "+" кнопка */
+.add-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #4caf50;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+.add-btn:hover {
+  background: #388e3c;
+}
+
 /* Modal */
 .modal.hidden { display: none; }
 .modal {
@@ -128,10 +176,44 @@ header {
   max-width: 90%;
   position: relative;
 }
-#closeModal {
+#closeModal,
+#closeAddModal {
   position: absolute;
   top: 8px;
   right: 10px;
   font-size: 20px;
   cursor: pointer;
+}
+
+/* Summary */
+.summary {
+  max-width: 1000px;
+  margin: 20px auto;
+  background: #fff3cd;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #ffeeba;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.summary ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.summary li {
+  margin: 5px 0;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary li::before {
+  content: "•";
+  color: #555;
+  font-size: 18px;
+  line-height: 1;
 }

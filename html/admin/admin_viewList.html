@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <title>View List</title>
+  <title>Admin View List</title>
   <link rel="stylesheet" href="/css/admin/admin_viewList.css">
 </head>
 <body>
@@ -14,8 +14,24 @@
     <div class="controls">
       <label for="yearSelect">Рік:</label>
       <select id="yearSelect"></select>
+
       <label for="monthSelect">Місяць:</label>
       <select id="monthSelect"></select>
+
+      <label>
+        <input type="checkbox" id="myDataCheckbox">
+        Мої дані
+      </label>
+
+      <label for="departmentSelect">Відділ:</label>
+      <select id="departmentSelect">
+        <option value="" disabled selected>Оберіть відділ</option>
+      </select>
+
+      <label for="userSelect">Користувач:</label>
+      <select id="userSelect">
+        <option value="" disabled selected>Оберіть користувача</option>
+      </select>
     </div>
   </header>
 
@@ -32,12 +48,43 @@
     <main id="calendar" class="calendar"></main>
   </section>
 
-  <!-- Модальне вікно -->
+  <!-- Зведення -->
+  <section id="summary" class="summary"></section>
+
+  <!-- Модальне вікно для перегляду -->
   <div id="modal" class="modal hidden">
     <div class="modal-content">
       <span id="closeModal">&times;</span>
       <h2 id="modalDate"></h2>
       <p id="modalInfo"></p>
+    </div>
+  </div>
+
+  <!-- Модальне вікно для додавання -->
+  <div id="addModal" class="modal hidden">
+    <div class="modal-content">
+      <span id="closeAddModal">&times;</span>
+      <h2 id="addModalDate"></h2>
+
+      <label>
+        Тип:
+        <select id="entryType">
+          <option value="overtime">Overtime</option>
+          <option value="missing">Missing Day</option>
+        </select>
+      </label><br><br>
+
+      <label>
+        Причина:
+        <input type="text" id="entryReason" placeholder="Причина (для Missing)">
+      </label><br><br>
+
+      <label>
+        Години:
+        <input type="number" id="entryHours" min="0" step="0.5">
+      </label><br><br>
+
+      <button id="saveEntryBtn">Зберегти</button>
     </div>
   </div>
 

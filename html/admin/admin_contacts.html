@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Contacts</title>
+  <link rel="stylesheet" href="/css/admin/admin_contacts.css">
+</head>
+<body>
+  <header>
+    <div class="title-block">
+      <h1>📇 Контакти користувачів</h1>
+      <a href="admin_dashboard_ui.html" class="back-link">⬅ Назад</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Фільтри -->
+    <aside class="filters">
+      <h2>Фільтри</h2>
+      <hr>
+      <label for="searchInput">Пошук:</label>
+      <input type="text" id="searchInput" placeholder="Введіть ім'я або email">
+
+      <label for="departmentSelect">Департамент:</label>
+      <select id="departmentSelect">
+        <option value="" selected>Оберіть департамент</option>
+      </select>
+    </aside>
+
+    <!-- Контакти -->
+    <main class="contacts" id="contactsList">
+      <p>Оберіть фільтри для перегляду користувачів</p>
+    </main>
+  </div>
+
+  <!-- Модальне вікно для перегляду деталей -->
+  <div id="userModal" class="modal hidden">
+    <div class="modal-content">
+      <span id="closeUserModal">&times;</span>
+      <h2 id="modalUserName"></h2>
+      <p><strong>Email:</strong> <span id="modalUserEmail"></span></p>
+      <p><strong>Телефон:</strong> <span id="modalUserPhone"></span></p>
+    </div>
+  </div>
+
+  <script src="/js/dashboard/admin/admin_contacts.js"></script>
+</body>
+</html>
