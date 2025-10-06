@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin CRM View</title>
+  <link rel="stylesheet" href="/css/admin/admin_crm_view.css">
+</head>
+<body>
+  <header>
+    <div class="controls">
+      <select id="departmentSelect">
+        <option value="" disabled selected>Відділ</option>
+      </select>
+
+      <select id="yearSelect">
+        <option value="" disabled selected>Рік</option>
+      </select>
+
+      <select id="monthSelect">
+        <option value="" disabled selected>Місяць</option>
+      </select>
+
+      <select id="viewModeSelect">
+        <option value="crm" selected>CRM</option>
+        <option value="calendar">Календар</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <table id="crmTable">
+      <thead>
+        <tr>
+          <th>👤 Ім'я</th>
+          <th class="date-col">1</th>
+          <th class="date-col">2</th>
+          <th class="date-col">3</th>
+          <th class="date-col">4</th>
+          <th class="date-col">5</th>
+          <th>💰 База</th>
+          <th>⏱️ Овертайм</th>
+          <th>🚕 Таксі</th>
+          <th>🚫 Пропуски</th>
+          <th>📊 Разом</th>
+        </tr>
+      </thead>
+      <tbody id="crmBody">
+        <!-- динамічно -->
+      </tbody>
+    </table>
+  </main>
+
+  <!-- Модалка для перегляду даних -->
+  <div id="infoModal" class="modal hidden">
+    <div class="modal-content">
+      <span id="closeModal">&times;</span>
+      <h2 id="modalTitle"></h2>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="/js/dashboard/admin/admin_crm_view.js"></script>
+</body>
+</html>

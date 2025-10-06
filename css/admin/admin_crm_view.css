@@ -1,0 +1,90 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #ffeeba;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background: #f4a261;
+  padding: 15px 25px;
+  display: flex;
+  justify-content: center;
+}
+
+.controls {
+  display: flex;
+  gap: 15px;
+}
+
+.controls select {
+  background: #cce3ff;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 15px;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+main {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+table {
+  border-collapse: collapse;
+  width: 90%;
+  background: #fffdf0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+th, td {
+  border: 1px solid #e0dcdc;
+  padding: 10px;
+  text-align: center;
+  font-size: 14px;
+}
+
+th {
+  background: #d8d8f0;
+  font-weight: bold;
+}
+
+th:first-child {
+  background: #d6ecff;
+  color: #c21807;
+}
+
+tr:nth-child(even) {
+  background: #fffbe6;
+}
+
+.date-col {
+  width: 40px;
+}
+
+.modal.hidden { display: none; }
+.modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex; justify-content: center; align-items: center;
+}
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 350px;
+  max-width: 90%;
+  position: relative;
+}
+#closeModal {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  cursor: pointer;
+}
