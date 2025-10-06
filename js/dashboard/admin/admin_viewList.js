@@ -27,6 +27,7 @@ const departmentSelect = document.getElementById('departmentSelect');
 const userSelect       = document.getElementById('userSelect');
 const myDataCheckbox   = document.getElementById('myDataCheckbox');
 const summaryEl        = document.getElementById('summary');
+const viewModeSelect   = document.getElementById('viewModeSelect');
 
 let selectedDate = null;
 let currentUserId = null;
@@ -129,7 +130,6 @@ async function loadCalendar(year, month, userId) {
   ]);
 
   const map = Object.create(null);
-
   let overtimeX1 = 0, overtimeX15 = 0, overtimeX2 = 0, missingSum = 0;
 
   overtimeData.forEach(o => {
@@ -196,7 +196,7 @@ async function loadCalendar(year, month, userId) {
     calendarEl.appendChild(cell);
   }
 
-  // summary (у вигляді списку)
+  // summary — у вигляді списку
   summaryEl.innerHTML = `
     <ul>
       <li>🕓 Overtime ×1: ${overtimeX1} год</li>
@@ -231,14 +231,23 @@ saveEntryBtn.onclick = async () => {
   }
 
   if (type === 'overtime') {
-    const payload = { overTimeDateRegistration: selectedDate, description: reason || "Overtime", overtime_hours: hours, multiplier: 1 };
+    const payload = { 
+      overTimeDateRegistration: selectedDate, 
+      description: reason || "Overtime", 
+      overtime_hours: hours, 
+      multiplier: 1 
+    };
     await fetch(`${API_BASE_URL}/over-time/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify(payload)
     });
   } else {
-    const payload = { reason: reason || "Відсутність", date: selectedDate, missingHours: hours };
+    const payload = { 
+      reason: reason || "Відсутність", 
+      date: selectedDate, 
+      missingHours: hours 
+    };
     await fetch(`${API_BASE_URL}/missing-hours/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
@@ -277,3 +286,13 @@ myDataCheckbox.addEventListener('change', () => {
 });
 
 closeModal?.addEventListener('click', () => modal.classList.add('hidden'));
+
+// ===== SWITCH VIEW MODE =====
+viewModeSelect.addEventListener('change', (e) => {
+  const mode = e.target.value;
+  if (mode === 'crm') {
+    window.location.href = '/html/admin/admin_crm_view.html';
+  } else if (mode === 'calendar') {
+    window.location.href = '/html/admin/admin_viewList.html';
+  }
+});

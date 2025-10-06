@@ -70,6 +70,20 @@ header {
   transform: scale(1.2);
 }
 
+/* View mode switcher */
+.view-mode-label {
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.view-mode-select {
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #fffbea;
+  font-weight: bold;
+}
+
 /* Calendar container */
 .calendar-container {
   padding: 20px;
@@ -110,11 +124,11 @@ header {
 }
 
 .overtime {
-  background-color: #c8e6c9; /* зелений */
+  background-color: #c8e6c9;
 }
 
 .missing {
-  background-color: #ffcdd2; /* червоний */
+  background-color: #ffcdd2;
 }
 
 /* badge з годинами */

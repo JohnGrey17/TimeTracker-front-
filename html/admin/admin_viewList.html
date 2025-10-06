@@ -11,6 +11,7 @@
       <h1>📅 Календар</h1>
       <a href="admin_dashboard_ui.html" class="back-link">⬅ Назад</a>
     </div>
+
     <div class="controls">
       <label for="yearSelect">Рік:</label>
       <select id="yearSelect"></select>
@@ -31,6 +32,13 @@
       <label for="userSelect">Користувач:</label>
       <select id="userSelect">
         <option value="" disabled selected>Оберіть користувача</option>
+      </select>
+
+      <!-- Новий перемикач режимів -->
+      <label for="viewModeSelect" class="view-mode-label">Режим:</label>
+      <select id="viewModeSelect" class="view-mode-select">
+        <option value="calendar" selected>📅 Calendar</option>
+        <option value="crm">💼 CRM</option>
       </select>
     </div>
   </header>
