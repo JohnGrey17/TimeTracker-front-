@@ -35,7 +35,7 @@ main {
 
 table {
   border-collapse: collapse;
-  width: 90%;
+  width: 95%;
   background: #fffdf0;
   border-radius: 10px;
   overflow: hidden;
@@ -44,9 +44,9 @@ table {
 
 th, td {
   border: 1px solid #e0dcdc;
-  padding: 10px;
+  padding: 8px;
   text-align: center;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 th {
@@ -64,15 +64,34 @@ tr:nth-child(even) {
 }
 
 .date-col {
-  width: 40px;
+  width: 35px;
+}
+
+.overtime {
+  background: #b6e7b6;
+  cursor: pointer;
+}
+
+.missing {
+  background: #ffb3b3;
+  cursor: pointer;
+}
+
+.salary-cell {
+  cursor: pointer;
+  background: #e6f2ff;
 }
 
 .modal.hidden { display: none; }
 .modal {
-  position: fixed; inset: 0;
+  position: fixed;
+  inset: 0;
   background: rgba(0,0,0,0.4);
-  display: flex; justify-content: center; align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
 .modal-content {
   background: white;
   padding: 20px;
@@ -81,10 +100,34 @@ tr:nth-child(even) {
   max-width: 90%;
   position: relative;
 }
-#closeModal {
+
+#closeModal, #closeSalaryModal {
   position: absolute;
   top: 10px;
   right: 10px;
   font-size: 20px;
   cursor: pointer;
+}
+
+#newSalary {
+  width: 90%;
+  padding: 8px;
+  margin-top: 20px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+#saveSalaryBtn {
+  margin-top: 15px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#saveSalaryBtn:hover {
+  background: #388e3c;
 }

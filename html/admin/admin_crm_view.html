@@ -29,33 +29,27 @@
 
   <main>
     <table id="crmTable">
-      <thead>
-        <tr>
-          <th>👤 Ім'я</th>
-          <th class="date-col">1</th>
-          <th class="date-col">2</th>
-          <th class="date-col">3</th>
-          <th class="date-col">4</th>
-          <th class="date-col">5</th>
-          <th>💰 База</th>
-          <th>⏱️ Овертайм</th>
-          <th>🚕 Таксі</th>
-          <th>🚫 Пропуски</th>
-          <th>📊 Разом</th>
-        </tr>
-      </thead>
-      <tbody id="crmBody">
-        <!-- динамічно -->
-      </tbody>
+      <thead id="crmHead"></thead>
+      <tbody id="crmBody"></tbody>
     </table>
   </main>
 
-  <!-- Модалка для перегляду даних -->
+  <!-- Модалка -->
   <div id="infoModal" class="modal hidden">
     <div class="modal-content">
       <span id="closeModal">&times;</span>
       <h2 id="modalTitle"></h2>
       <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- Модалка для ЗП -->
+  <div id="salaryModal" class="modal hidden">
+    <div class="modal-content">
+      <span id="closeSalaryModal">&times;</span>
+      <h2>Редагування ЗП</h2>
+      <input type="number" id="newSalary" placeholder="Нова сума">
+      <button id="saveSalaryBtn">💾 Зберегти</button>
     </div>
   </div>
 

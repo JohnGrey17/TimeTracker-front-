@@ -9,24 +9,37 @@ const departmentSelect = document.getElementById('departmentSelect');
 const yearSelect = document.getElementById('yearSelect');
 const monthSelect = document.getElementById('monthSelect');
 const viewModeSelect = document.getElementById('viewModeSelect');
+const crmHead = document.getElementById('crmHead');
 const crmBody = document.getElementById('crmBody');
 const modal = document.getElementById('infoModal');
 const closeModal = document.getElementById('closeModal');
 const modalTitle = document.getElementById('modalTitle');
 const modalContent = document.getElementById('modalContent');
+const salaryModal = document.getElementById('salaryModal');
+const closeSalaryModal = document.getElementById('closeSalaryModal');
+const newSalary = document.getElementById('newSalary');
+const saveSalaryBtn = document.getElementById('saveSalaryBtn');
+
+let selectedUserId = null;
+let salaryCells = []; // кеш для швидкого оновлення UI
 
 // ===== Helpers =====
 async function getJson(url) {
-  try {
-    const res = await fetch(url, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (!res.ok) return [];
-    return await res.json();
-  } catch (e) {
-    console.error(e);
-    return [];
-  }
+  const res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+  if (!res.ok) throw new Error('Request failed');
+  return res.json();
+}
+
+async function patchJson(url, body) {
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  return res.ok;
 }
 
 // ===== INIT YEAR / MONTH =====
@@ -34,7 +47,6 @@ function initYearMonth() {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
-
   for (let y = 2022; y <= currentYear + 2; y++) {
     const opt = document.createElement('option');
     opt.value = y;
@@ -42,7 +54,6 @@ function initYearMonth() {
     if (y === currentYear) opt.selected = true;
     yearSelect.appendChild(opt);
   }
-
   for (let m = 1; m <= 12; m++) {
     const opt = document.createElement('option');
     opt.value = m;
@@ -64,49 +75,155 @@ async function loadDepartments() {
   });
 }
 
-// ===== LOAD PLACEHOLDER DATA =====
-async function loadCRMTable() {
-  crmBody.innerHTML = '';
-  // поки фіктивні дані
-  for (let i = 0; i < 3; i++) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>Test User ${i+1}</td>
-      <td></td><td></td><td></td><td></td><td></td>
-      <td>15000</td>
-      <td class="overtime-cell">5 год</td>
-      <td>200</td>
-      <td class="missing-cell">2 год</td>
-      <td>15500</td>
-    `;
-    crmBody.appendChild(tr);
+// ===== CREATE TABLE HEAD =====
+function createTableHead(daysInMonth) {
+  const headRow = document.createElement('tr');
+  headRow.innerHTML = `<th>👤 Ім'я</th>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    headRow.innerHTML += `<th class="date-col">${d}</th>`;
   }
+  headRow.innerHTML += `
+    <th>💰 Ставка</th>
+    <th>⏱️ x1</th>
+    <th>⏱️ x1.5</th>
+    <th>⏱️ x2</th>
+    <th>🚕 Таксі</th>
+    <th>🚫 Пропущені години</th>
+    <th>📊 Разом</th>
+  `;
+  crmHead.innerHTML = '';
+  crmHead.appendChild(headRow);
+}
 
-  // приклад відкриття модалки
-  document.querySelectorAll('.overtime-cell').forEach(cell => {
-    cell.onclick = () => openModal('Overtime', '5 год у вихідний день');
+// ===== LOAD CRM DATA =====
+async function loadCRMData() {
+  const depId = departmentSelect.value;
+  const year = parseInt(yearSelect.value);
+  const month = parseInt(monthSelect.value);
+  if (!depId || !year || !month) return;
+
+  crmBody.innerHTML = '⏳ Завантаження...';
+  const data = await getJson(`${API_BASE_URL}/crm/department?departmentId=${depId}&year=${year}&month=${month}`);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  createTableHead(daysInMonth);
+
+  crmBody.innerHTML = '';
+  salaryCells = [];
+
+  data.forEach(user => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${user.firstName} ${user.lastName}</td>`;
+    const map = {};
+
+    (user.overtimesDay || []).forEach(o => {
+      map[o.overTimeDateRegistration] = { type: 'overtime', desc: o.description, mult: o.multiplier, hours: o.overtimeHours };
+    });
+    (user.missingsDay || []).forEach(m => {
+      map[m.date] = { type: 'missing', desc: m.reason, hours: m.missingHours };
+    });
+
+    // створюємо комірки по днях
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = new Date(year, month - 1, d).toISOString().split('T')[0];
+      const cell = document.createElement('td');
+      const val = map[dateStr];
+      if (val) {
+        cell.classList.add(val.type);
+        cell.title = val.desc;
+
+        if (val.type === 'overtime') {
+          cell.innerHTML = `<small>${val.hours}год<br>x${val.mult}</small>`;
+        } else {
+          cell.innerHTML = `<small>${val.hours}год</small>`;
+        }
+
+        // тепер клік працює
+        cell.addEventListener('click', () =>
+          openModal(
+            val.type === 'overtime' ? 'Overtime' : 'Missing',
+            `${val.desc}<br><b>Години:</b> ${val.hours}${val.mult ? `<br><b>Коеф:</b> x${val.mult}` : ''}`
+          )
+        );
+      }
+      tr.appendChild(cell);
+    }
+
+    // блок бази + підсумки
+    const base = parseFloat(user.baseSalary || 0);
+    const x1 = sumByMultiplier(user.overtimesDay, 1);
+    const x15 = sumByMultiplier(user.overtimesDay, 1.5);
+    const x2 = sumByMultiplier(user.overtimesDay, 2);
+    const missing = parseFloat(user.totalMissingHours || 0);
+
+    const result = base + x1 * 100 + x15 * 150 + x2 * 200 - missing * 100;
+
+    const salaryTd = document.createElement('td');
+    salaryTd.className = 'salary-cell';
+    salaryTd.dataset.id = user.userId;
+    salaryTd.textContent = base.toFixed(2);
+    salaryCells.push(salaryTd);
+
+    tr.appendChild(salaryTd);
+    tr.innerHTML += `
+      <td>${x1}</td>
+      <td>${x15}</td>
+      <td>${x2}</td>
+      <td>—</td>
+      <td>${missing}</td>
+      <td><b>${result.toFixed(2)}</b></td>
+    `;
+
+    crmBody.appendChild(tr);
   });
-  document.querySelectorAll('.missing-cell').forEach(cell => {
-    cell.onclick = () => openModal('Missing Day', 'Відсутність через лікарняний');
+
+  // відкриття модалки редагування ЗП
+  salaryCells.forEach(cell => {
+    cell.onclick = () => {
+      selectedUserId = cell.dataset.id;
+      newSalary.value = cell.textContent.trim();
+      salaryModal.classList.remove('hidden');
+    };
   });
 }
 
-// ===== MODAL =====
+// ===== UTIL =====
+function sumByMultiplier(list, mult) {
+  return list ? list.filter(o => o.multiplier == mult).reduce((acc, o) => acc + o.overtimeHours, 0) : 0;
+}
+
+// ===== MODALS =====
 function openModal(title, content) {
   modalTitle.textContent = title;
-  modalContent.textContent = content;
+  modalContent.innerHTML = content;
   modal.classList.remove('hidden');
 }
 closeModal.onclick = () => modal.classList.add('hidden');
+closeSalaryModal.onclick = () => salaryModal.classList.add('hidden');
+
+saveSalaryBtn.onclick = async () => {
+  if (!selectedUserId) return;
+  const newVal = parseFloat(newSalary.value);
+  if (isNaN(newVal) || newVal < 0) return alert('❌ Введіть коректну суму!');
+
+  const ok = await patchJson(`${API_BASE_URL}/users/sal/${selectedUserId}`, { baseSalary: newVal });
+  if (ok) {
+    alert('✅ Зарплату оновлено!');
+    salaryModal.classList.add('hidden');
+    // оновлюємо значення без перезавантаження всього
+    const cell = salaryCells.find(c => c.dataset.id == selectedUserId);
+    if (cell) cell.textContent = newVal.toFixed(2);
+  } else alert('❌ Помилка при оновленні зарплати!');
+};
 
 // ===== SWITCH VIEW =====
 viewModeSelect.addEventListener('change', (e) => {
-  if (e.target.value === 'calendar') {
-    window.location.href = '/html/admin/admin_viewList.html';
-  }
+  if (e.target.value === 'calendar') window.location.href = '/html/admin/admin_viewList.html';
 });
 
 // ===== INIT =====
 initYearMonth();
 loadDepartments();
-loadCRMTable();
+
+[departmentSelect, yearSelect, monthSelect].forEach(el =>
+  el.addEventListener('change', loadCRMData)
+);
