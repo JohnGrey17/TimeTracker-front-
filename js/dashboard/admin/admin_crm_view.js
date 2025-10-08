@@ -20,19 +20,18 @@ const closeSalaryModal = document.getElementById('closeSalaryModal');
 const newSalary = document.getElementById('newSalary');
 const saveSalaryBtn = document.getElementById('saveSalaryBtn');
 
-let selectedUserId = null;
-let salaryCells = []; // кеш для швидкого оновлення UI
+let id = null;
 
 // ===== Helpers =====
 async function getJson(url) {
   const res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
-  if (!res.ok) throw new Error('Request failed');
+  if (!res.ok) throw new Error('❌ Request failed');
   return res.json();
 }
 
-async function patchJson(url, body) {
+async function postJson(url, body) {
   const res = await fetch(url, {
-    method: 'PATCH',
+    method: 'POST',
     headers: {
       Authorization: 'Bearer ' + token,
       'Content-Type': 'application/json',
@@ -67,6 +66,7 @@ function initYearMonth() {
 async function loadDepartments() {
   const data = await getJson(`${API_BASE_URL}/department/getAll`);
   departmentSelect.innerHTML = `<option value="" disabled selected>Оберіть відділ</option>`;
+  data.sort((a, b) => a.name.localeCompare(b.name, 'uk')); // ✅ сортування відділів
   data.forEach(dep => {
     const opt = document.createElement('option');
     opt.value = dep.id;
@@ -78,19 +78,24 @@ async function loadDepartments() {
 // ===== CREATE TABLE HEAD =====
 function createTableHead(daysInMonth) {
   const headRow = document.createElement('tr');
-  headRow.innerHTML = `<th>👤 Ім'я</th>`;
+  const thName = document.createElement('th');
+  thName.textContent = "👤 Ім'я";
+  headRow.appendChild(thName);
+
   for (let d = 1; d <= daysInMonth; d++) {
-    headRow.innerHTML += `<th class="date-col">${d}</th>`;
+    const th = document.createElement('th');
+    th.textContent = d;
+    th.classList.add('date-col');
+    headRow.appendChild(th);
   }
-  headRow.innerHTML += `
-    <th>💰 Ставка</th>
-    <th>⏱️ x1</th>
-    <th>⏱️ x1.5</th>
-    <th>⏱️ x2</th>
-    <th>🚕 Таксі</th>
-    <th>🚫 Пропущені години</th>
-    <th>📊 Разом</th>
-  `;
+
+  const extraHeaders = ["💰 Ставка", "⏱️ x1", "⏱️ x1.5", "⏱️ x2", "🚕 Таксі", "🚫 Пропущені години", "📊 Разом"];
+  extraHeaders.forEach(label => {
+    const th = document.createElement('th');
+    th.textContent = label;
+    headRow.appendChild(th);
+  });
+
   crmHead.innerHTML = '';
   crmHead.appendChild(headRow);
 }
@@ -104,89 +109,85 @@ async function loadCRMData() {
 
   crmBody.innerHTML = '⏳ Завантаження...';
   const data = await getJson(`${API_BASE_URL}/crm/department?departmentId=${depId}&year=${year}&month=${month}`);
+
+  // ✅ сортуємо користувачів по алфавіту
+  data.sort((a, b) => {
+    const last = a.lastName.localeCompare(b.lastName, 'uk');
+    return last === 0 ? a.firstName.localeCompare(b.firstName, 'uk') : last;
+  });
+
   const daysInMonth = new Date(year, month, 0).getDate();
   createTableHead(daysInMonth);
 
   crmBody.innerHTML = '';
-  salaryCells = [];
 
   data.forEach(user => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${user.firstName} ${user.lastName}</td>`;
-    const map = {};
+
+    // Ім'я
+    const nameTd = document.createElement('td');
+    nameTd.textContent = `${user.firstName} ${user.lastName}`;
+    tr.appendChild(nameTd);
+
+    const overtimeMap = {};
+    const missingMap = {};
 
     (user.overtimesDay || []).forEach(o => {
-      map[o.overTimeDateRegistration] = { type: 'overtime', desc: o.description, mult: o.multiplier, hours: o.overtimeHours };
+      overtimeMap[o.overTimeDateRegistration] = o;
     });
     (user.missingsDay || []).forEach(m => {
-      map[m.date] = { type: 'missing', desc: m.reason, hours: m.missingHours };
+      missingMap[m.date] = m;
     });
 
-    // створюємо комірки по днях
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = new Date(year, month - 1, d).toISOString().split('T')[0];
       const cell = document.createElement('td');
-      const val = map[dateStr];
-      if (val) {
-        cell.classList.add(val.type);
-        cell.title = val.desc;
+      const over = overtimeMap[dateStr];
+      const miss = missingMap[dateStr];
 
-        if (val.type === 'overtime') {
-          cell.innerHTML = `<small>${val.hours}год<br>x${val.mult}</small>`;
-        } else {
-          cell.innerHTML = `<small>${val.hours}год</small>`;
-        }
-
-        // тепер клік працює
+      if (over) {
+        cell.classList.add('overtime');
+        cell.innerHTML = `<small>${over.overtimeHours}год<br>x${over.multiplier}</small>`;
         cell.addEventListener('click', () =>
-          openModal(
-            val.type === 'overtime' ? 'Overtime' : 'Missing',
-            `${val.desc}<br><b>Години:</b> ${val.hours}${val.mult ? `<br><b>Коеф:</b> x${val.mult}` : ''}`
-          )
+          openModal('Overtime', `${over.description}<br><b>Години:</b> ${over.overtimeHours}<br><b>Коеф:</b> x${over.multiplier}`)
+        );
+      } else if (miss) {
+        cell.classList.add('missing');
+        cell.innerHTML = `<small>${miss.missingHours}год</small>`;
+        cell.addEventListener('click', () =>
+          openModal('Пропуск', `${miss.reason}<br><b>Пропущено годин:</b> ${miss.missingHours}`)
         );
       }
+
       tr.appendChild(cell);
     }
 
-    // блок бази + підсумки
-    const base = parseFloat(user.baseSalary || 0);
+    const salaryTd = document.createElement('td');
+    salaryTd.textContent = (user.baseSalary ?? 0).toFixed(2);
+    salaryTd.classList.add('salary-cell');
+    salaryTd.dataset.id = user.userId;
+    salaryTd.addEventListener('click', () => {
+      id = user.userId;
+      newSalary.value = user.baseSalary ?? 0;
+      salaryModal.classList.remove('hidden');
+    });
+    tr.appendChild(salaryTd);
+
     const x1 = sumByMultiplier(user.overtimesDay, 1);
     const x15 = sumByMultiplier(user.overtimesDay, 1.5);
     const x2 = sumByMultiplier(user.overtimesDay, 2);
-    const missing = parseFloat(user.totalMissingHours || 0);
+    const missing = (user.missingsDay || []).reduce((a, m) => a + (m.missingHours || 0), 0);
 
-    const result = base + x1 * 100 + x15 * 150 + x2 * 200 - missing * 100;
-
-    const salaryTd = document.createElement('td');
-    salaryTd.className = 'salary-cell';
-    salaryTd.dataset.id = user.userId;
-    salaryTd.textContent = base.toFixed(2);
-    salaryCells.push(salaryTd);
-
-    tr.appendChild(salaryTd);
-    tr.innerHTML += `
-      <td>${x1}</td>
-      <td>${x15}</td>
-      <td>${x2}</td>
-      <td>—</td>
-      <td>${missing}</td>
-      <td><b>${result.toFixed(2)}</b></td>
-    `;
+    [x1, x15, x2, '—', missing, ''].forEach(val => {
+      const td = document.createElement('td');
+      td.textContent = val;
+      tr.appendChild(td);
+    });
 
     crmBody.appendChild(tr);
   });
-
-  // відкриття модалки редагування ЗП
-  salaryCells.forEach(cell => {
-    cell.onclick = () => {
-      selectedUserId = cell.dataset.id;
-      newSalary.value = cell.textContent.trim();
-      salaryModal.classList.remove('hidden');
-    };
-  });
 }
 
-// ===== UTIL =====
 function sumByMultiplier(list, mult) {
   return list ? list.filter(o => o.multiplier == mult).reduce((acc, o) => acc + o.overtimeHours, 0) : 0;
 }
@@ -200,30 +201,43 @@ function openModal(title, content) {
 closeModal.onclick = () => modal.classList.add('hidden');
 closeSalaryModal.onclick = () => salaryModal.classList.add('hidden');
 
+// ===== Збереження ЗП без перерендеру =====
 saveSalaryBtn.onclick = async () => {
-  if (!selectedUserId) return;
-  const newVal = parseFloat(newSalary.value);
-  if (isNaN(newVal) || newVal < 0) return alert('❌ Введіть коректну суму!');
+  if (!id) return;
+  const salary = parseFloat(newSalary.value);
+  if (isNaN(salary) || salary < 0) return alert('❌ Введіть коректну суму!');
 
-  const ok = await patchJson(`${API_BASE_URL}/users/sal/${selectedUserId}`, { baseSalary: newVal });
+  console.log("🔸 Надсилаю POST на бек...");
+  const body = { userId: id, salary: salary };
+  const ok = await postJson(`${API_BASE_URL}/users/sal`, body);
+
   if (ok) {
     alert('✅ Зарплату оновлено!');
     salaryModal.classList.add('hidden');
-    // оновлюємо значення без перезавантаження всього
-    const cell = salaryCells.find(c => c.dataset.id == selectedUserId);
-    if (cell) cell.textContent = newVal.toFixed(2);
-  } else alert('❌ Помилка при оновленні зарплати!');
+
+    // ✅ оновлюємо лише клітинку
+    const cell = document.querySelector(`.salary-cell[data-id="${id}"]`);
+    if (cell) cell.textContent = salary.toFixed(2);
+  } else {
+    alert('❌ Помилка при оновленні зарплати!');
+  }
 };
 
 // ===== SWITCH VIEW =====
-viewModeSelect.addEventListener('change', (e) => {
+viewModeSelect.addEventListener('change', e => {
   if (e.target.value === 'calendar') window.location.href = '/html/admin/admin_viewList.html';
 });
+
+const homeBtn = document.getElementById('homeBtn');
+if (homeBtn) {
+  homeBtn.addEventListener('click', () => {
+    window.location.href = '/html/admin/admin_dashboard_ui.html'; // 👈 заміни шлях на свій dashboard
+  });
+}
 
 // ===== INIT =====
 initYearMonth();
 loadDepartments();
-
 [departmentSelect, yearSelect, monthSelect].forEach(el =>
   el.addEventListener('change', loadCRMData)
 );

@@ -131,3 +131,25 @@ tr:nth-child(even) {
 #saveSalaryBtn:hover {
   background: #388e3c;
 }
+
+.header-left {
+  position: absolute;
+  left: 20px;
+  top: 15px;
+}
+
+.home-btn {
+  background: #457b9d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-weight: bold;
+}
+
+.home-btn:hover {
+  background: #1d3557;
+}
