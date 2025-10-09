@@ -153,3 +153,24 @@ tr:nth-child(even) {
 .home-btn:hover {
   background: #1d3557;
 }
+.day-number {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.day-name {
+  font-size: 11px;
+  color: #555;
+  margin-top: 2px;
+}
+
+.weekend {
+  background: #f0f0f0 !important;
+  color: #a00;
+}
+
+th.date-col {
+  vertical-align: top;
+  padding: 4px;
+  min-width: 40px;
+}

@@ -66,7 +66,7 @@ function initYearMonth() {
 async function loadDepartments() {
   const data = await getJson(`${API_BASE_URL}/department/getAll`);
   departmentSelect.innerHTML = `<option value="" disabled selected>Оберіть відділ</option>`;
-  data.sort((a, b) => a.name.localeCompare(b.name, 'uk')); // ✅ сортування відділів
+  data.sort((a, b) => a.name.localeCompare(b.name, 'uk'));
   data.forEach(dep => {
     const opt = document.createElement('option');
     opt.value = dep.id;
@@ -76,16 +76,22 @@ async function loadDepartments() {
 }
 
 // ===== CREATE TABLE HEAD =====
-function createTableHead(daysInMonth) {
+function createTableHead(year, month, daysInMonth) {
+  crmHead.innerHTML = '';
+
+  const weekDays = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
   const headRow = document.createElement('tr');
   const thName = document.createElement('th');
   thName.textContent = "👤 Ім'я";
   headRow.appendChild(thName);
 
   for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month - 1, d);
+    const dayOfWeek = weekDays[date.getDay()];
     const th = document.createElement('th');
-    th.textContent = d;
+    th.innerHTML = `<div class="day-number">${d}</div><div class="day-name">${dayOfWeek}</div>`;
     th.classList.add('date-col');
+    if (dayOfWeek === 'Сб' || dayOfWeek === 'Нд') th.classList.add('weekend');
     headRow.appendChild(th);
   }
 
@@ -96,7 +102,6 @@ function createTableHead(daysInMonth) {
     headRow.appendChild(th);
   });
 
-  crmHead.innerHTML = '';
   crmHead.appendChild(headRow);
 }
 
@@ -110,21 +115,18 @@ async function loadCRMData() {
   crmBody.innerHTML = '⏳ Завантаження...';
   const data = await getJson(`${API_BASE_URL}/crm/department?departmentId=${depId}&year=${year}&month=${month}`);
 
-  // ✅ сортуємо користувачів по алфавіту
   data.sort((a, b) => {
     const last = a.lastName.localeCompare(b.lastName, 'uk');
     return last === 0 ? a.firstName.localeCompare(b.firstName, 'uk') : last;
   });
 
   const daysInMonth = new Date(year, month, 0).getDate();
-  createTableHead(daysInMonth);
+  createTableHead(year, month, daysInMonth);
 
   crmBody.innerHTML = '';
 
   data.forEach(user => {
     const tr = document.createElement('tr');
-
-    // Ім'я
     const nameTd = document.createElement('td');
     nameTd.textContent = `${user.firstName} ${user.lastName}`;
     tr.appendChild(nameTd);
@@ -140,20 +142,20 @@ async function loadCRMData() {
     });
 
     for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = new Date(year, month - 1, d).toISOString().split('T')[0];
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const cell = document.createElement('td');
       const over = overtimeMap[dateStr];
       const miss = missingMap[dateStr];
 
       if (over) {
         cell.classList.add('overtime');
-        cell.innerHTML = `<small>${over.overtimeHours}год<br>x${over.multiplier}</small>`;
+        cell.innerHTML = `<small>${over.overtimeHours} год<br>x${over.multiplier}</small>`;
         cell.addEventListener('click', () =>
           openModal('Overtime', `${over.description}<br><b>Години:</b> ${over.overtimeHours}<br><b>Коеф:</b> x${over.multiplier}`)
         );
       } else if (miss) {
         cell.classList.add('missing');
-        cell.innerHTML = `<small>${miss.missingHours}год</small>`;
+        cell.innerHTML = `<small>${miss.missingHours} год</small>`;
         cell.addEventListener('click', () =>
           openModal('Пропуск', `${miss.reason}<br><b>Пропущено годин:</b> ${miss.missingHours}`)
         );
@@ -214,8 +216,6 @@ saveSalaryBtn.onclick = async () => {
   if (ok) {
     alert('✅ Зарплату оновлено!');
     salaryModal.classList.add('hidden');
-
-    // ✅ оновлюємо лише клітинку
     const cell = document.querySelector(`.salary-cell[data-id="${id}"]`);
     if (cell) cell.textContent = salary.toFixed(2);
   } else {
@@ -231,7 +231,7 @@ viewModeSelect.addEventListener('change', e => {
 const homeBtn = document.getElementById('homeBtn');
 if (homeBtn) {
   homeBtn.addEventListener('click', () => {
-    window.location.href = '/html/admin/admin_dashboard_ui.html'; // 👈 заміни шлях на свій dashboard
+    window.location.href = '/html/admin/admin_dashboard_ui.html';
   });
 }
 
