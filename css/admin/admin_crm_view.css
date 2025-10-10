@@ -174,3 +174,34 @@ th.date-col {
   padding: 4px;
   min-width: 40px;
 }
+
+/* ===== NEW: inside-cell dual display ===== */
+.cell-top {
+  color: #004085; /* години — сині */
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+.cell-bottom {
+  color: #155724; /* сума — зелена */
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.missing .cell-bottom {
+  color: #b71c1c; /* червона для штрафів */
+}
+
+/* ===== NEW: focus checkbox near names ===== */
+.user-focus {
+  transform: scale(1.2);
+  margin-right: 6px;
+  cursor: pointer;
+}
+
+tr.dimmed {
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}

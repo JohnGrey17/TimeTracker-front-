@@ -50,14 +50,12 @@ function initYearMonth() {
     const opt = document.createElement('option');
     opt.value = y;
     opt.textContent = y;
-    if (y === currentYear) opt.selected = true;
     yearSelect.appendChild(opt);
   }
   for (let m = 1; m <= 12; m++) {
     const opt = document.createElement('option');
     opt.value = m;
     opt.textContent = new Date(currentYear, m - 1).toLocaleString('uk-UA', { month: 'long' });
-    if (m === currentMonth) opt.selected = true;
     monthSelect.appendChild(opt);
   }
 }
@@ -95,7 +93,7 @@ function createTableHead(year, month, daysInMonth) {
     headRow.appendChild(th);
   }
 
-  const extraHeaders = ["💰 Ставка", "⏱️ x1", "⏱️ x1.5", "⏱️ x2", "🚕 Таксі", "🚫 Пропущені години", "📊 Разом"];
+  const extraHeaders = ["💰 Ставка", "⏱️ x1", "⏱️ x1.5", "⏱️ x2", "🚕 Таксі", "🚫 Пропущені години", "💵 До виплати"];
   extraHeaders.forEach(label => {
     const th = document.createElement('th');
     th.textContent = label;
@@ -127,10 +125,18 @@ async function loadCRMData() {
 
   data.forEach(user => {
     const tr = document.createElement('tr');
+
+    // === Name + checkbox ===
     const nameTd = document.createElement('td');
-    nameTd.textContent = `${user.firstName} ${user.lastName}`;
+    nameTd.innerHTML = `
+      <label>
+        <input type="checkbox" class="user-focus">
+        ${user.firstName} ${user.lastName}
+      </label>
+    `;
     tr.appendChild(nameTd);
 
+    // === дні місяця ===
     const overtimeMap = {};
     const missingMap = {};
 
@@ -149,21 +155,29 @@ async function loadCRMData() {
 
       if (over) {
         cell.classList.add('overtime');
-        cell.innerHTML = `<small>${over.overtimeHours} год<br>x${over.multiplier}</small>`;
+        cell.innerHTML = `<div class="cell-top">${over.overtimeHours} год</div>`;
         cell.addEventListener('click', () =>
-          openModal('Overtime', `${over.description}<br><b>Години:</b> ${over.overtimeHours}<br><b>Коеф:</b> x${over.multiplier}`)
+          openModal('Overtime', `
+            ${over.description}<br>
+            <b>Години:</b> ${over.overtimeHours}<br>
+            <b>Коеф:</b> x${over.multiplier}<br>
+          `)
         );
       } else if (miss) {
         cell.classList.add('missing');
-        cell.innerHTML = `<small>${miss.missingHours} год</small>`;
+        cell.innerHTML = `<div class="cell-top">${miss.missingHours} год</div>`;
         cell.addEventListener('click', () =>
-          openModal('Пропуск', `${miss.reason}<br><b>Пропущено годин:</b> ${miss.missingHours}`)
+          openModal('Пропуск', `
+            ${miss.reason}<br>
+            <b>Пропущено годин:</b> ${miss.missingHours}<br>
+          `)
         );
       }
 
       tr.appendChild(cell);
     }
 
+    // === Salary cell ===
     const salaryTd = document.createElement('td');
     salaryTd.textContent = (user.baseSalary ?? 0).toFixed(2);
     salaryTd.classList.add('salary-cell');
@@ -175,18 +189,53 @@ async function loadCRMData() {
     });
     tr.appendChild(salaryTd);
 
+    // === дані по коефіцієнтах ===
     const x1 = sumByMultiplier(user.overtimesDay, 1);
     const x15 = sumByMultiplier(user.overtimesDay, 1.5);
     const x2 = sumByMultiplier(user.overtimesDay, 2);
     const missing = (user.missingsDay || []).reduce((a, m) => a + (m.missingHours || 0), 0);
 
-    [x1, x15, x2, '—', missing, ''].forEach(val => {
+    const sumX1 = user.overtimeX1 ?? 0;
+    const sumX15 = user.overtimeX1_5 ?? 0;
+    const sumX2 = user.overtimeX2 ?? 0;
+    const sumMissing = user.totalDeductions ?? 0;
+
+    function createDoubleCell(hours, amount, isDeduction = false) {
       const td = document.createElement('td');
-      td.textContent = val;
-      tr.appendChild(td);
-    });
+      td.innerHTML = `
+        <div class="cell-top">${hours || 0} год</div>
+        <div class="cell-bottom" style="color:${isDeduction ? '#b71c1c' : '#155724'};">
+          ${isDeduction ? '−' : '+'}${amount.toFixed(2)} грн
+        </div>
+      `;
+      return td;
+    }
+
+    tr.appendChild(createDoubleCell(x1, sumX1));
+    tr.appendChild(createDoubleCell(x15, sumX15));
+    tr.appendChild(createDoubleCell(x2, sumX2));
+    const taxiTd = document.createElement('td');
+    taxiTd.textContent = '—';
+    tr.appendChild(taxiTd);
+    tr.appendChild(createDoubleCell(missing, sumMissing, true));
+
+    // === Total ===
+    const totalTd = document.createElement('td');
+    totalTd.textContent = user.totalSum?.toFixed(2) ?? '0.00';
+    tr.appendChild(totalTd);
 
     crmBody.appendChild(tr);
+  });
+
+  // === focus handling ===
+  document.querySelectorAll('.user-focus').forEach(chk => {
+    chk.addEventListener('change', () => {
+      const anyChecked = Array.from(document.querySelectorAll('.user-focus')).some(c => c.checked);
+      document.querySelectorAll('#crmBody tr').forEach(row => {
+        const rowChecked = row.querySelector('.user-focus')?.checked;
+        row.classList.toggle('dimmed', anyChecked && !rowChecked);
+      });
+    });
   });
 }
 
@@ -203,21 +252,23 @@ function openModal(title, content) {
 closeModal.onclick = () => modal.classList.add('hidden');
 closeSalaryModal.onclick = () => salaryModal.classList.add('hidden');
 
-// ===== Збереження ЗП без перерендеру =====
+// ===== Збереження ЗП + reload із фільтрами =====
 saveSalaryBtn.onclick = async () => {
   if (!id) return;
   const salary = parseFloat(newSalary.value);
   if (isNaN(salary) || salary < 0) return alert('❌ Введіть коректну суму!');
 
-  console.log("🔸 Надсилаю POST на бек...");
   const body = { userId: id, salary: salary };
   const ok = await postJson(`${API_BASE_URL}/users/sal`, body);
 
   if (ok) {
+    // ✅ зберігаємо поточні фільтри
+    localStorage.setItem('selectedDepartment', departmentSelect.value);
+    localStorage.setItem('selectedYear', yearSelect.value);
+    localStorage.setItem('selectedMonth', monthSelect.value);
+
     alert('✅ Зарплату оновлено!');
-    salaryModal.classList.add('hidden');
-    const cell = document.querySelector(`.salary-cell[data-id="${id}"]`);
-    if (cell) cell.textContent = salary.toFixed(2);
+    window.location.reload(); // перезавантажуємо сторінку
   } else {
     alert('❌ Помилка при оновленні зарплати!');
   }
@@ -237,7 +288,27 @@ if (homeBtn) {
 
 // ===== INIT =====
 initYearMonth();
-loadDepartments();
+
+loadDepartments().then(() => {
+  const dep = localStorage.getItem('selectedDepartment');
+  const year = localStorage.getItem('selectedYear');
+  const month = localStorage.getItem('selectedMonth');
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+
+  // якщо нічого не збережено — підставляємо поточну дату
+  yearSelect.value = year || currentYear;
+  monthSelect.value = month || currentMonth;
+
+  if (dep) {
+    departmentSelect.value = dep;
+    loadCRMData();
+  }
+});
+
+// оновлення при зміні будь-якого фільтру
 [departmentSelect, yearSelect, monthSelect].forEach(el =>
   el.addEventListener('change', loadCRMData)
 );
