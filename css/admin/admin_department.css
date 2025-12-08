@@ -1,0 +1,232 @@
+:root {
+    --card-width: 420px;
+    --row-gap: 12px;
+}
+
+/* ===== BASE ===== */
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #fef6e4;
+    margin: 0;
+}
+
+.container {
+    padding: 0;
+}
+
+/* ===== HEADER ===== */
+
+header {
+    background-color: #f4a261;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 30px;
+}
+
+.header-left {
+    font-weight: bold;
+    font-size: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.back-link-header a {
+    font-size: 13px;
+    color: #5e00b8;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link-header a:hover {
+    text-decoration: underline;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-email {
+    font-size: 14px;
+}
+
+.logout-btn {
+    background: #ddd;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* ===== LAYOUT ===== */
+
+.departments-layout {
+    display: grid;
+    grid-template-columns: var(--card-width) minmax(var(--card-width), 1fr);
+    gap: 24px;
+    padding: 30px 40px;
+    align-items: flex-start;
+}
+
+/* ===== CARD ===== */
+
+.card {
+    background-color: #ffe0a3;
+    padding: 20px 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.card h2 {
+    margin-top: 0;
+    margin-bottom: 18px;
+}
+
+/* ===== NEW DEPARTMENT FORM ===== */
+
+.new-dept-card form label {
+    display: block;
+    margin-bottom: var(--row-gap);
+}
+
+.new-dept-card input {
+    width: 100%;
+    padding: 6px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-top: 4px;
+}
+
+.new-dept-card button {
+    margin-top: 8px;
+    padding: 8px 14px;
+    background-color: #f4a261;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.new-dept-card button:hover {
+    background-color: #e76f51;
+    color: white;
+}
+
+/* ===== DEPARTMENTS LIST ===== */
+
+.dept-list-card {
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+}
+
+.departments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Oкремий департамент – аккордеон */
+
+.dept-card {
+    background-color: #ffecc4;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+/* Заголовок (натискаємо тут, щоб розгорнути) */
+.dept-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    cursor: pointer;
+}
+
+.dept-main-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.dept-name {
+    font-weight: 600;
+}
+
+.dept-code {
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+.dept-toggle {
+    font-size: 14px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Тіло аккордеона */
+
+.dept-body {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.25s ease, opacity 0.25s ease;
+    padding: 0 12px 0;
+}
+
+.dept-card.open .dept-body {
+    max-height: 300px;
+    opacity: 1;
+    padding: 0 12px 10px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.dept-body-content {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+/* Форма оновлення всередині департаменту */
+
+.dept-body-content p {
+    margin: 0 0 8px;
+}
+
+.dept-body-content label {
+    display: block;
+    margin-bottom: var(--row-gap);
+}
+
+.dept-body-content input {
+    width: 100%;
+    padding: 6px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-top: 4px;
+}
+
+.dept-body-content button {
+    margin-top: 4px;
+    padding: 7px 12px;
+    background-color: #f4a261;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.dept-body-content button:hover {
+    background-color: #e76f51;
+    color: white;
+}
+
+/* Невелике сповіщення внизу картки (опціонально) */
+
+.status-message {
+    margin-top: 8px;
+    font-size: 13px;
+}

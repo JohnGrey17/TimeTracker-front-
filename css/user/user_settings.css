@@ -1,0 +1,182 @@
+:root {
+    --label-width: 120px;
+    --input-width: 200px;
+    --row-gap: 16px;
+}
+
+/* ================= BASE ================= */
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #fef6e4;
+    margin: 0;
+}
+
+/* ================= HEADER ================= */
+
+header {
+    background-color: #f4a261;
+    display: flex;
+    align-items: flex-start;
+    padding: 20px 30px;
+}
+
+.header-left,
+.header-center,
+.header-right {
+    flex: 1;
+}
+
+.header-left {
+    font-weight: bold;
+    font-size: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.header-center {
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 4px;
+}
+
+.header-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-email {
+    font-size: 14px;
+}
+
+.logout-btn {
+    background: #ddd;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* ✅ BACK LINK ПІД "ОСОБИСТИЙ КАБІНЕТ" */
+
+.back-link-header a {
+    font-size: 13px;
+    color: #5e00b8;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link-header a:hover {
+    text-decoration: underline;
+}
+
+/* ================= LAYOUT ================= */
+/* 2 колонки по центру екрана */
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 380px);
+    grid-auto-rows: 1fr;
+    column-gap: 40px;
+    row-gap: 24px;
+
+    justify-content: flex-start;   /* ✅ ЗЛІВА */
+    align-items: stretch;
+
+    padding: 30px 40px 40px 40px;  /* акуратний відступ зліва */
+}
+
+/* ================= CARD ================= */
+
+.card {
+    background-color: #ffe0a3;
+    padding: 22px 26px;
+    border-radius: 12px;
+    width: 380px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    height: 100%;                 /* щоб займати всю висоту рядка */
+    box-sizing: border-box;
+}
+
+.card h2 {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+/* ================= PROFILE / EMAIL / DEPARTMENT ROWS ================= */
+
+.editable-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: var(--row-gap);
+}
+
+.editable-field label {
+    width: var(--label-width);
+    text-align: right;
+    font-weight: 500;
+}
+
+.editable-field input {
+    width: var(--input-width);
+    padding: 6px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.editable-field button {
+    padding: 4px 8px;
+    background: #f4a261;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* ================= PASSWORD ROWS ================= */
+
+.password-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: var(--row-gap);
+}
+
+.password-row label {
+    width: var(--label-width);
+    text-align: right;
+    font-weight: 500;
+}
+
+.password-row input {
+    width: var(--input-width);
+    padding: 6px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* ================= BUTTON ЗОНА ================= */
+
+.form-actions {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.form-actions button {
+    width: calc(var(--label-width) + var(--input-width) + 10px);
+    padding: 10px;
+    background-color: #f4a261;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.form-actions button:hover {
+    background-color: #e76f51;
+    color: white;
+}

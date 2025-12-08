@@ -2,76 +2,83 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <title>View List</title>
+  <title>Synergy</title>
   <link rel="stylesheet" href="/css/user/viewList.css">
 </head>
 <body>
-  <header>
-    <div class="title-block">
-      <h1>📅 Календар</h1>
-      <a href="user_dashboard_ui.html" class="back-link">⬅ Назад</a>
-    </div>
-    <div class="controls">
-      <label for="yearSelect">Рік:</label>
-      <select id="yearSelect"></select>
-      <label for="monthSelect">Місяць:</label>
-      <select id="monthSelect"></select>
-    </div>
-  </header>
-
-  <section class="calendar-container">
-    <div class="weekdays">
-      <div>Пн</div>
-      <div>Вт</div>
-      <div>Ср</div>
-      <div>Чт</div>
-      <div>Пт</div>
-      <div>Сб</div>
-      <div>Нд</div>
-    </div>
-    <main id="calendar" class="calendar"></main>
-
-    <!-- ✅ Зведення -->
-    <div id="summary" class="summary"></div>
-  </section>
-
-  <!-- Модальне вікно для перегляду -->
-  <div id="modal" class="modal hidden">
-    <div class="modal-content">
-      <span id="closeModal">&times;</span>
-      <h2 id="modalDate"></h2>
-      <p id="modalInfo"></p>
-    </div>
+<header>
+  <div class="title-block">
+    <h1>📅 Календар</h1>
+    <a href="user_dashboard_ui.html" class="back-link">⬅ Назад</a>
   </div>
+  <div class="controls">
+    <label for="yearSelect">Рік:</label>
+    <select id="yearSelect"></select>
 
-  <!-- Модальне вікно для додавання -->
-  <div id="addModal" class="modal hidden">
-    <div class="modal-content">
-      <span id="closeAddModal">&times;</span>
-      <h2 id="addModalDate"></h2>
-
-      <label>
-        Тип:
-        <select id="entryType">
-          <option value="overtime">Overtime</option>
-          <option value="missing">Missing Day</option>
-        </select>
-      </label><br><br>
-
-      <label>
-        Причина:
-        <input type="text" id="entryReason" placeholder="Причина (для Missing)">
-      </label><br><br>
-
-      <label>
-        Години:
-        <input type="number" id="entryHours" min="0" step="0.5">
-      </label><br><br>
-
-      <button id="saveEntryBtn">Зберегти</button>
-    </div>
+    <label for="monthSelect">Місяць:</label>
+    <select id="monthSelect"></select>
   </div>
+</header>
 
-  <script src="/js/dashboard/viewList.js"></script>
+<section class="calendar-container">
+  <div class="weekdays">
+    <div>Пн</div>
+    <div>Вт</div>
+    <div>Ср</div>
+    <div>Чт</div>
+    <div>Пт</div>
+    <div>Сб</div>
+    <div>Нд</div>
+  </div>
+  <main id="calendar" class="calendar"></main>
+
+  <!-- ✅ Зведення -->
+  <div id="summary" class="summary"></div>
+</section>
+
+<!-- Модальне вікно для перегляду -->
+<div id="modal" class="modal hidden">
+  <div class="modal-content">
+    <span id="closeModal">&times;</span>
+    <h2 id="modalDate"></h2>
+    <p id="modalInfo"></p>
+  </div>
+</div>
+
+<!-- Модальне вікно для додавання / редагування -->
+<div id="addModal" class="modal hidden">
+  <div class="modal-content">
+    <span id="closeAddModal">&times;</span>
+    <h2 id="addModalDate"></h2>
+
+    <label>
+      Тип:
+      <select id="entryType">
+        <option value="overtime">Overtime</option>
+        <option value="missing">Missing Day</option>
+      </select>
+    </label>
+    <br><br>
+
+    <label>
+      Причина:
+      <input type="text" id="entryReason" placeholder="Причина (для Missing)">
+    </label>
+    <br><br>
+
+    <label>
+      Години:
+      <input type="number" id="entryHours" min="0" step="0.5">
+    </label>
+    <br><br>
+
+    <button id="saveEntryBtn">Зберегти</button>
+    <button id="deleteEntryBtn" class="danger-btn" style="display: none;">
+      🗑 Видалити запис
+    </button>
+  </div>
+</div>
+
+<script src="/js/dashboard/viewList.js"></script>
 </body>
 </html>

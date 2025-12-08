@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Synergy</title>
+    <link rel="stylesheet" href="../../css/admin/admin_department.css">
+</head>
+<body>
+<div class="container">
+
+    <header>
+        <div class="header-left">
+            Кабінет департаментів
+            <div class="back-link-header">
+                <a href="/html/admin/admin_dashboard_ui.html">← Повернутися в адмін-панель</a>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <span id="userEmail" class="user-email"></span>
+            <button class="logout-btn" onclick="logout()">Вийти</button>
+        </div>
+    </header>
+
+    <main class="departments-layout">
+
+        <!-- Створення нового департаменту -->
+        <section class="card new-dept-card">
+            <h2>Створити новий департамент</h2>
+
+            <form id="newDeptForm">
+                <label>
+                    Назва департаменту:
+                    <input type="text" id="newDeptName" required>
+                </label>
+
+                <label>
+                    Код департаменту:
+                    <input type="text" id="newDeptCode" required>
+                </label>
+
+                <button type="submit">➕ Створити департамент</button>
+            </form>
+        </section>
+
+        <!-- Список департаментів -->
+        <section class="card dept-list-card">
+            <h2>Список департаментів</h2>
+
+            <div id="departmentsList" class="departments-list">
+                <!-- JS динамічно підставить департаменти -->
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script src="../../js/dashboard/admin/admin_department.js"></script>
+</body>
+</html>

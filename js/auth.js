@@ -22,19 +22,30 @@ async function loginUser(event) {
     }
 
     const data = await res.json();
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("roles", JSON.stringify(data.roles));
+    console.log("Login response:", data);
+
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    }
+
+    // захист від дивних форматів ролей
+    const rawRoles = data.roles || data.authorities || [];
+    const rolesArray = Array.isArray(rawRoles) ? rawRoles : [String(rawRoles)];
+    const normalizedRoles = rolesArray.map(r =>
+      r.startsWith("ROLE_") ? r.substring(5) : r
+    );
+
+    localStorage.setItem("roles", JSON.stringify(normalizedRoles));
 
     alert("✅ Успішний вхід!");
 
-
-const roles = data.roles; 
-
-if (roles.includes("ADMIN")) {
-  window.location.href = "../html/admin/admin_dashboard_ui.html";
-} else {
-  window.location.href = "../html/user/user_dashboard_ui.html";
-}
+    const isAdmin = normalizedRoles.includes("ADMIN");
+    if (isAdmin) {
+      // шлях з кореня додатку
+      window.location.href = "/html/admin/admin_dashboard_ui.html";
+    } else {
+      window.location.href = "/html/user/user_dashboard_ui.html";
+    }
   } catch (e) {
     console.error("❌ Login error:", e);
     alert("Не вдалося увійти");
@@ -81,14 +92,21 @@ async function registerUser(event) {
 async function loadDepartments() {
   try {
     const res = await fetch(`${API_BASE_URL}/department/getAll`);
-    if (!res.ok) throw new Error("Помилка завантаження департаментів");
+    if (!res.ok) {
+      throw new Error("Помилка завантаження департаментів");
+    }
 
     const data = await res.json();
     const select = document.getElementById("regDepartment");
 
+    // очищаємо список, залишивши перший placeholder
+    while (select.options.length > 1) {
+      select.remove(1);
+    }
+
     data.forEach((d) => {
       const opt = document.createElement("option");
-      opt.value = d.id; // у request піде id
+      opt.value = d.id;      // у request піде id
       opt.textContent = d.name; // користувач бачить назву
       select.appendChild(opt);
     });

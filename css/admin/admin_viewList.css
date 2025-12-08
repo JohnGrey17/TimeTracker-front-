@@ -123,6 +123,13 @@ header {
   transform: scale(1.03);
 }
 
+.day.empty {
+  background: transparent;
+  border: none;
+  cursor: default;
+}
+
+/* стани */
 .overtime {
   background-color: #c8e6c9;
 }
@@ -171,17 +178,44 @@ header {
   text-align: center;
   cursor: pointer;
 }
+
 .add-btn:hover {
   background: #388e3c;
 }
 
+/* ✏️ кнопка редагування */
+.edit-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #ff9800;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 4px;
+  padding: 0 6px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background: #f57c00;
+}
+
 /* Modal */
 .modal.hidden { display: none; }
+
 .modal {
-  position: fixed; inset: 0;
+  position: fixed;
+  inset: 0;
   background: rgba(0,0,0,0.5);
-  display: flex; justify-content: center; align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
 .modal-content {
   background: white;
   padding: 20px;
@@ -190,6 +224,7 @@ header {
   max-width: 90%;
   position: relative;
 }
+
 #closeModal,
 #closeAddModal {
   position: absolute;
@@ -230,4 +265,20 @@ header {
   color: #555;
   font-size: 18px;
   line-height: 1;
+}
+
+/* кнопка видалення */
+.danger-btn {
+  margin-left: 10px;
+  padding: 6px 10px;
+  background: #e53935;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.danger-btn:hover {
+  background: #c62828;
 }

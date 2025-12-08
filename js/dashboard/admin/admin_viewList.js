@@ -6,6 +6,10 @@ if (!token) {
   window.location.href = '../../html/auth.html';
 }
 
+// Глобальна мапа подій по датах
+// { "2025-12-08": { type: 'OVERTIME'|'MISSING', id, hours, desc, mult } }
+let eventsByDate = {};
+
 // ===== DOM =====
 const calendarEl   = document.getElementById('calendar');
 const monthSelect  = document.getElementById('monthSelect');
@@ -22,6 +26,7 @@ const entryType    = document.getElementById('entryType');
 const entryReason  = document.getElementById('entryReason');
 const entryHours   = document.getElementById('entryHours');
 const saveEntryBtn = document.getElementById('saveEntryBtn');
+const deleteEntryBtn = document.getElementById('deleteEntryBtn');
 
 const departmentSelect = document.getElementById('departmentSelect');
 const userSelect       = document.getElementById('userSelect');
@@ -37,6 +42,12 @@ function isoDate(y, m, d) {
   const dt = new Date(y, m - 1, d);
   dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
   return dt.toISOString().split('T')[0];
+}
+
+function isWeekend(dateStr) {
+  const d = new Date(dateStr);
+  const day = d.getDay(); // 0 - Нд, 6 - Сб
+  return day === 0 || day === 6;
 }
 
 async function getJson(url) {
@@ -108,6 +119,7 @@ async function loadUsers(departmentId) {
 async function loadCalendar(year, month, userId) {
   calendarEl.innerHTML = '';
   summaryEl.innerHTML = '';
+  eventsByDate = {};
 
   const daysInMonth = new Date(year, month, 0).getDate();
   const firstDay    = new Date(year, month - 1, 1).getDay();
@@ -134,7 +146,15 @@ async function loadCalendar(year, month, userId) {
 
   overtimeData.forEach(o => {
     const key = o.overTimeDateRegistration;
-    map[key] = { type: 'overtime', desc: o.description, hours: o.overtimeHours, mult: o.multiplier };
+    const item = {
+      type: 'OVERTIME',
+      desc: o.description,
+      hours: o.overtimeHours,
+      mult: o.multiplier,
+      id: o.id
+    };
+    map[key] = item;
+    eventsByDate[key] = item;
 
     if (o.multiplier == 1) overtimeX1 += o.overtimeHours;
     else if (o.multiplier == 1.5) overtimeX15 += o.overtimeHours;
@@ -143,7 +163,14 @@ async function loadCalendar(year, month, userId) {
 
   missingData.forEach(m => {
     const key = m.date;
-    map[key] = { type: 'missing', desc: m.reason, hours: m.missingHours };
+    const item = {
+      type: 'MISSING',
+      desc: m.reason,
+      hours: m.missingHours,
+      id: m.id
+    };
+    map[key] = item;
+    eventsByDate[key] = item;
     missingSum += m.missingHours;
   });
 
@@ -160,15 +187,20 @@ async function loadCalendar(year, month, userId) {
     cell.textContent = d;
 
     const item = map[dateStr];
+
     if (item) {
-      cell.classList.add(item.type);
+      if (item.type === 'OVERTIME') {
+        cell.classList.add('overtime');
+      } else if (item.type === 'MISSING') {
+        cell.classList.add('missing');
+      }
 
       const badge = document.createElement('div');
       badge.className = 'badge';
       badge.textContent = `${item.hours} год`;
       cell.appendChild(badge);
 
-      if (item.type === 'overtime') {
+      if (item.type === 'OVERTIME' && item.mult) {
         const mult = document.createElement('div');
         mult.className = 'multiplier';
         mult.textContent = `x${item.mult}`;
@@ -183,20 +215,29 @@ async function loadCalendar(year, month, userId) {
     }
 
     if (myDataCheckbox.checked) {
-      const addBtn = document.createElement('div');
-      addBtn.className = 'add-btn';
-      addBtn.textContent = '+';
-      addBtn.onclick = (e) => {
+      const existing = eventsByDate[dateStr];
+      const btn = document.createElement('div');
+
+      if (existing) {
+        btn.className = 'edit-btn';
+        btn.textContent = '✏️';
+        btn.title = 'Редагувати / змінити подію';
+      } else {
+        btn.className = 'add-btn';
+        btn.textContent = '+';
+        btn.title = 'Додати подію';
+      }
+
+      btn.onclick = (e) => {
         e.stopPropagation();
         openAddModal(dateStr);
       };
-      cell.appendChild(addBtn);
+      cell.appendChild(btn);
     }
 
     calendarEl.appendChild(cell);
   }
 
-  // summary — у вигляді списку
   summaryEl.innerHTML = `
     <ul>
       <li>🕓 Overtime ×1: ${overtimeX1} год</li>
@@ -207,57 +248,286 @@ async function loadCalendar(year, month, userId) {
   `;
 }
 
-// ===== ADD MODAL =====
+// ===== MODAL ADD / EDIT =====
 function openAddModal(dateStr) {
   selectedDate = dateStr;
   addModalDate.textContent = `📅 ${dateStr}`;
-  entryReason.value = '';
-  entryHours.value = '';
-  entryType.value = 'overtime';
+  const existing = eventsByDate[dateStr];
+
+  if (existing) {
+    if (existing.type === 'OVERTIME') {
+      entryType.value = 'overtime';
+    } else {
+      entryType.value = 'missing';
+    }
+    entryReason.value = existing.desc || '';
+    entryHours.value  = existing.hours ?? '';
+    deleteEntryBtn.style.display = 'inline-block';
+  } else {
+    entryType.value = 'overtime';
+    entryReason.value = '';
+    entryHours.value  = '';
+    deleteEntryBtn.style.display = 'none';
+  }
+
   addModal.classList.remove('hidden');
 }
 
 closeAddModal.onclick = () => addModal.classList.add('hidden');
+closeModal?.addEventListener('click', () => modal.classList.add('hidden'));
 
-// SAVE ENTRY
+// ===== HTTP HELPERS =====
+async function createOvertime(dateStr, hours, reason) {
+  const payload = {
+    overTimeDateRegistration: dateStr,
+    description: reason || 'Overtime',
+    overtime_hours: hours
+  };
+
+  const res = await fetch(`${API_BASE_URL}/over-time/add`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (res.status === 401) {
+    alert('⛔ Сесія завершена. Авторизуйтесь знову.');
+    window.location.href = '../../html/auth.html';
+    return false;
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    alert('❌ Не вдалося зберегти overtime: ' + text);
+    return false;
+  }
+  return true;
+}
+
+async function updateOvertime(id, dateStr, hours, reason) {
+  const payload = {
+    id: id,
+    description: reason || 'Overtime',
+    overtime_hours: hours
+  };
+
+  const res = await fetch(`${API_BASE_URL}/over-time/update`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (res.status === 401) {
+    alert('⛔ Сесія завершена. Авторизуйтесь знову.');
+    window.location.href = '../../html/auth.html';
+    return false;
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    alert('❌ Не вдалося оновити overtime: ' + text);
+    return false;
+  }
+  return true;
+}
+
+async function deleteOvertime(id) {
+  const res = await fetch(`${API_BASE_URL}/over-time/delete/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  });
+
+  if (res.status === 401) {
+    alert('⛔ Сесія завершена. Авторизуйтесь знову.');
+    window.location.href = '../../html/auth.html';
+    return false;
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    alert('❌ Не вдалося видалити overtime: ' + text);
+    return false;
+  }
+  return true;
+}
+
+async function createMissing(dateStr, hours, reason) {
+  const payload = {
+    reason: reason || 'Відсутність',
+    date: dateStr,
+    missingHours: hours
+  };
+
+  const res = await fetch(`${API_BASE_URL}/missing-hours/add`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (res.status === 401) {
+    alert('⛔ Сесія завершена. Авторизуйтесь знову.');
+    window.location.href = '../../html/auth.html';
+    return false;
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    alert('❌ Не вдалося зберегти missing day: ' + text);
+    return false;
+  }
+  return true;
+}
+
+async function updateMissing(id, hours, reason) {
+  const payload = {
+    id: id,
+    reason: reason || 'Відсутність',
+    missingHours: hours
+  };
+
+  const res = await fetch(`${API_BASE_URL}/missing-hours/update`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (res.status === 401) {
+    alert('⛔ Сесія завершена. Авторизуйтесь знову.');
+    window.location.href = '../../html/auth.html';
+    return false;
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    alert('❌ Не вдалося оновити missing day: ' + text);
+    return false;
+  }
+  return true;
+}
+
+async function deleteMissing(id) {
+  const res = await fetch(`${API_BASE_URL}/missing-hours/delete/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  });
+
+  if (res.status === 401) {
+    alert('⛔ Сесія завершена. Авторизуйтесь знову.');
+    window.location.href = '../../html/auth.html';
+    return false;
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    alert('❌ Не вдалося видалити missing day: ' + text);
+    return false;
+  }
+  return true;
+}
+
+// ===== SAVE ENTRY =====
 saveEntryBtn.onclick = async () => {
-  const type = entryType.value;
-  const hours = parseFloat(entryHours.value);
-  const reason = entryReason.value;
+  if (!selectedDate) {
+    alert('❌ Дата не вибрана');
+    return;
+  }
+
+  const type   = entryType.value;
+  const hours  = parseFloat(entryHours.value);
+  const reason = entryReason.value.trim();
+  const weekend = isWeekend(selectedDate);
+  const existing = eventsByDate[selectedDate] || null;
 
   if (!hours || hours <= 0) {
-    alert('❌ Вкажіть кількість годин!');
+    alert('❌ Вкажіть коректну кількість годин!');
     return;
   }
 
   if (type === 'overtime') {
-    const payload = { 
-      overTimeDateRegistration: selectedDate, 
-      description: reason || "Overtime", 
-      overtime_hours: hours, 
-      multiplier: 1 
-    };
-    await fetch(`${API_BASE_URL}/over-time/add`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify(payload)
-    });
-  } else {
-    const payload = { 
-      reason: reason || "Відсутність", 
-      date: selectedDate, 
-      missingHours: hours 
-    };
-    await fetch(`${API_BASE_URL}/missing-hours/add`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify(payload)
-    });
+    const max = weekend ? 8 : 5;
+    if (hours > max) {
+      alert(`🛑 На цю дату можна не більше ${max} год овертайму.`);
+      return;
+    }
   }
 
-  alert('✅ Запис збережено!');
-  addModal.classList.add('hidden');
-  loadCalendar(parseInt(yearSelect.value), parseInt(monthSelect.value), currentUserId);
+  if (type === 'missing' && weekend) {
+    alert('🛑 Missing day не можна додавати / змінювати у вихідні.');
+    return;
+  }
+
+  let ok = false;
+
+  if (!existing) {
+    if (type === 'overtime') {
+      ok = await createOvertime(selectedDate, hours, reason);
+    } else {
+      ok = await createMissing(selectedDate, hours, reason);
+    }
+  } else {
+    if (existing.type === 'OVERTIME') {
+      if (type === 'overtime') {
+        ok = await updateOvertime(existing.id, selectedDate, hours, reason);
+      } else {
+        const delOk = await deleteOvertime(existing.id);
+        if (delOk) ok = await createMissing(selectedDate, hours, reason);
+      }
+    } else if (existing.type === 'MISSING') {
+      if (type === 'missing') {
+        ok = await updateMissing(existing.id, hours, reason);
+      } else {
+        const delOk = await deleteMissing(existing.id);
+        if (delOk) ok = await createOvertime(selectedDate, hours, reason);
+      }
+    }
+  }
+
+  if (ok) {
+    alert('✅ Запис збережено!');
+    addModal.classList.add('hidden');
+    await loadCalendar(parseInt(yearSelect.value), parseInt(monthSelect.value), currentUserId);
+  }
+};
+
+// ===== DELETE ENTRY (🗑) =====
+deleteEntryBtn.onclick = async () => {
+  if (!selectedDate) return;
+  const existing = eventsByDate[selectedDate];
+  if (!existing) {
+    alert('❌ Немає запису для видалення.');
+    return;
+  }
+
+  if (!confirm('❗ Точно видалити запис на цю дату?')) return;
+
+  let ok = false;
+  if (existing.type === 'OVERTIME') {
+    ok = await deleteOvertime(existing.id);
+  } else if (existing.type === 'MISSING') {
+    ok = await deleteMissing(existing.id);
+  }
+
+  if (ok) {
+    alert('🗑 Запис видалено.');
+    addModal.classList.add('hidden');
+    await loadCalendar(parseInt(yearSelect.value), parseInt(monthSelect.value), currentUserId);
+  }
 };
 
 // ===== INIT =====
@@ -265,14 +535,19 @@ initYears();
 initMonths();
 loadDepartments();
 
-monthSelect.addEventListener('change', () => loadCalendar(parseInt(yearSelect.value), parseInt(monthSelect.value), currentUserId));
-yearSelect.addEventListener('change', () => loadCalendar(parseInt(yearSelect.value), parseInt(monthSelect.value), currentUserId));
+monthSelect.addEventListener('change', () =>
+  loadCalendar(parseInt(yearSelect.value), parseInt(monthSelect.value), currentUserId)
+);
+yearSelect.addEventListener('change', () =>
+  loadCalendar(parseInt(yearSelect.value), parseInt(monthSelect.value), currentUserId)
+);
 
 departmentSelect.addEventListener('change', (e) => loadUsers(e.target.value));
 userSelect.addEventListener('change', (e) => {
   currentUserId = e.target.value;
   loadCalendar(parseInt(yearSelect.value), parseInt(monthSelect.value), currentUserId);
 });
+
 myDataCheckbox.addEventListener('change', () => {
   if (myDataCheckbox.checked) {
     departmentSelect.disabled = true;
@@ -285,9 +560,6 @@ myDataCheckbox.addEventListener('change', () => {
   loadCalendar(parseInt(yearSelect.value), parseInt(monthSelect.value), currentUserId);
 });
 
-closeModal?.addEventListener('click', () => modal.classList.add('hidden'));
-
-// ===== SWITCH VIEW MODE =====
 viewModeSelect.addEventListener('change', (e) => {
   const mode = e.target.value;
   if (mode === 'crm') {

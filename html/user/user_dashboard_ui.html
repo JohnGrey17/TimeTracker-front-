@@ -2,68 +2,34 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>USER DASHBOARD</title>
+    <title>Synergy</title>
     <link rel="stylesheet" href="../../css/user/userdashboard.css">
 </head>
 <body>
 <div class="container">
     <header>
-        <h1>USER DESH BOARD</h1>
-        <div class="logout">
-            <button onclick="logout()">LOGOUT</button>
-            <div class="email-display" id="userEmail">user@example.com</div>
+        <div class="header-left">Особистий кабінет</div>
+        <div class="header-center">SYNERGY</div>
+        <div class="header-right">
+            <button class="logout-btn" onclick="logout()">Вийти</button>
         </div>
     </header>
 
     <main class="grid">
+        <!-- Календар -->
         <section class="card">
-            <h3><span class="icon">🕓</span> OverTime</h3>
-            <div class="form-section" id="overtimeSection">
-                <label>Дата:
-                    <input type="date" id="overtimeDate">
-                </label>
-                <label><input type="checkbox" onclick="setToday('overtimeDate')"> сьогодні</label>
-                <label>Що було зроблено ?:
-                    <input type="text" id="overtimeDesc">
-                </label>
-                <label>Години:
-                    <input type="number" id="overtimeHours" step="0.1">
-                </label>
-                <button onclick="submitOvertime()">Надіслати</button>
-            </div>
-            <button onclick="toggleSection('overtimeSection')">Розгорнути</button>
+            <h3><span class="icon">📅</span> Календар</h3>
+            <a href="/html/user/viewList.html">
+                <button>Переглянути</button>
+            </a>
         </section>
 
+        <!-- Налаштування -->
         <section class="card">
-            <h3><span class="icon">😴</span> missingDay</h3>
-            <div class="form-section" id="missingSection">
-                <label>Дата:
-                    <input type="date" id="missingDate">
-                </label>
-                <label><input type="checkbox" onclick="setToday('missingDate')"> сьогодні</label>
-                <label>Причина:
-                    <input type="text" id="missingReason">
-                </label>
-
-                <label>Години:
-                    <input type="number" id="missingHours" step="0.1">
-                </label>
-                <button onclick="submitMissing()">Надіслати</button>
-            </div>
-            <button onclick="toggleSection('missingSection')">Розгорнути</button>
-        </section>
-
-        <section class="card">
-            <h3><span class="icon">📅</span> calendar</h3>
-             <a href="/html/user/viewList.html">
-                   <button>Переглянути</button>
-                        </a>
-                        </section>
-
-
-        <section class="card">
-            <h3><span class="icon">⚙️</span> setting</h3>
-            <p>In progress</p>
+            <h3><span class="icon">⚙️</span> Налаштування</h3>
+            <a href="/html/user/user_settings.html">
+                <button>Відкрити</button>
+            </a>
         </section>
     </main>
 </div>

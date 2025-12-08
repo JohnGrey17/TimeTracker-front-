@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="fb5b65c9-0415-481d-8d95-51e4861558f0" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../css/admin/admin_dashboard.css" beforeDir="false" afterPath="$PROJECT_DIR$/../css/admin/admin_dashboard.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../css/admin/admin_viewList.css" beforeDir="false" afterPath="$PROJECT_DIR$/../css/admin/admin_viewList.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../css/auth.css" beforeDir="false" afterPath="$PROJECT_DIR$/../css/auth.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../css/user/userdashboard.css" beforeDir="false" afterPath="$PROJECT_DIR$/../css/user/userdashboard.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../css/user/viewList.css" beforeDir="false" afterPath="$PROJECT_DIR$/../css/user/viewList.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/admin_contacts.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin/admin_contacts.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/admin_crm_view.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin/admin_crm_view.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/admin_dashboard_ui.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin/admin_dashboard_ui.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/admin_viewList.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin/admin_viewList.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth.html" beforeDir="false" afterPath="$PROJECT_DIR$/auth.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user/user_dashboard_ui.html" beforeDir="false" afterPath="$PROJECT_DIR$/user/user_dashboard_ui.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user/viewList.html" beforeDir="false" afterPath="$PROJECT_DIR$/user/viewList.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../js/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/../js/auth.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../js/dashboard/admin/admin_dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/../js/dashboard/admin/admin_dashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../js/dashboard/admin/admin_viewList.js" beforeDir="false" afterPath="$PROJECT_DIR$/../js/dashboard/admin/admin_viewList.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../js/dashboard/userdashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/../js/dashboard/userdashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../js/dashboard/viewList.js" beforeDir="false" afterPath="$PROJECT_DIR$/../js/dashboard/viewList.js" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "JohnGrey17"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/JohnGrey17/TimeTracker-front-.git",
+    "accountId": "47f985a1-7af7-484e-a6a2-64f70f3c0ad0"
+  }
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 8
+}]]></component>
+  <component name="ProjectId" id="36aGbD2H1HeeAt9JlI07CXiqcJW" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="fb5b65c9-0415-481d-8d95-51e4861558f0" name="Changes" comment="" />
+      <created>1765237337502</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1765237337502</updated>
+    </task>
+    <servers />
+  </component>
+</project>

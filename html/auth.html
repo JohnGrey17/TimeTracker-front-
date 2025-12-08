@@ -2,10 +2,17 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8" />
-  <title>Tracker</title>
+  <title>Synergy</title>
   <link rel="stylesheet" href="../css/auth.css" />
 </head>
 <body>
+  <!-- Логотип / назва -->
+  <div class="brand">
+    <div class="brand-title">SYNERGY</div>
+    
+  </div>
+
+  <!-- Картка авторизації -->
   <div class="auth-container">
     <!-- ЛОГІН -->
     <div id="loginForm">
@@ -23,7 +30,6 @@
       <h2>Реєстрація</h2>
       <form onsubmit="registerUser(event)">
         <input type="text" id="regFirstName" placeholder="Ім'я" required />
-        
         <input type="text" id="regLastName" placeholder="Прізвище" required />
         <input type="email" id="regEmail" placeholder="Email" required />
         <input type="tel" id="regPhoneNumber" placeholder="Телефон" required />

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Synergy</title>
+    <link rel="stylesheet" href="../../css/user/user_settings.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="header-left">
+            Особистий кабінет
+            <div class="back-link-header">
+                <a href="/html/user/user_dashboard_ui.html">← Повернутися назад</a>
+            </div>
+        </div>
+
+        <div class="header-center">SYNERGY</div>
+
+        <div class="header-right">
+            <span id="userEmail" class="user-email"></span>
+            <button class="logout-btn" onclick="logout()">Вийти</button>
+        </div>
+    </header>
+
+    <main class="settings-grid">
+
+        <!-- ЛІВО ВГОРІ: ДАНІ ПРОФІЛЮ -->
+        <section class="card">
+            <h2>Дані профілю</h2>
+
+            <form id="profileForm" onsubmit="updateUserCard(event)">
+                <div class="editable-field">
+                    <label>Імʼя:</label>
+                    <input type="text" id="firstName" disabled>
+                    <button type="button" onclick="enableEdit('firstName')">✏️</button>
+                </div>
+
+                <div class="editable-field">
+                    <label>Прізвище:</label>
+                    <input type="text" id="lastName" disabled>
+                    <button type="button" onclick="enableEdit('lastName')">✏️</button>
+                </div>
+
+                <div class="editable-field">
+                    <label>Телефон:</label>
+                    <input type="tel" id="phoneNumber" disabled>
+                    <button type="button" onclick="enableEdit('phoneNumber')">✏️</button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">💾 Зберегти зміни</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ПРАВО ВГОРІ: ЗМІНИТИ EMAIL -->
+        <section class="card">
+            <h2>Змінити email</h2>
+
+            <form id="emailForm" onsubmit="updateEmail(event)">
+                <div class="editable-field">
+                    <label>Email:</label>
+                    <input type="email" id="currentEmail" disabled>
+                    <button type="button" onclick="enableEdit('currentEmail')">✏️</button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">📧 Змінити email</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ЛІВО ВНИЗУ: ЗМІНА ПАРОЛЮ -->
+        <section class="card">
+            <h2>Зміна паролю</h2>
+
+            <form id="passwordForm" onsubmit="updatePassword(event)">
+                <div class="password-row">
+                    <label>Поточний пароль:</label>
+                    <input type="password" id="currentPassword" required>
+                </div>
+
+                <div class="password-row">
+                    <label>Новий пароль:</label>
+                    <input type="password" id="newPassword" required minlength="4" maxlength="32">
+                </div>
+
+                <div class="password-row">
+                    <label>Повторіть новий пароль:</label>
+                    <input type="password" id="repeatPassword" required minlength="4" maxlength="32">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">🔐 Змінити пароль</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ПРАВО ВНИЗУ: ЗМІНИТИ ДЕПАРТАМЕНТ -->
+        <section class="card">
+            <h2>Змінити департамент</h2>
+
+            <form id="departmentForm" onsubmit="updateDepartment(event)">
+                <div class="editable-field">
+                    <label>Департамент:</label>
+                    <input type="text" id="departmentName" disabled>
+                    <button type="button" onclick="enableEdit('departmentName')">✏️</button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">🏢 Змінити департамент</button>
+                </div>
+            </form>
+        </section>
+
+    </main>
+</div>
+
+<script src="../../js/dashboard/user_settings.js"></script>
+</body>
+</html>

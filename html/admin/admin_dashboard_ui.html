@@ -2,81 +2,54 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Tracker</title>
+    <title>Synergy</title>
     <link rel="stylesheet" href="../../css/admin/admin_dashboard.css">
 </head>
 <body>
 <div class="container">
     <header>
-        <h1>ADMIN DASHBOARD</h1>
-       
+        <h1>Особистий кабінет</h1>
+              
         <div class="logout">
-            <button onclick="logout()">LOGOUT</button>
-            <div class="email-display" id="userEmail">admin@example.com</div>
+            <button onclick="logout()">Вихід</button>
         </div>
     </header>
 
     <main class="grid">
-        <!-- OverTime -->
-        <section class="card">
-            <h3><span class="icon">🕓</span> OverTime</h3>
-            <div class="form-section" id="overtimeSection">
-                <label>Дата:
-                    <input type="date" id="overtimeDate">
-                </label>
-                <label><input type="checkbox" onclick="setToday('overtimeDate')"> сьогодні</label>
-                <label>Що було зроблено ?:
-                    <input type="text" id="overtimeDesc">
-                </label>
-                <label>Години:
-                    <input type="number" id="overtimeHours" step="0.1">
-                </label>
-                <button onclick="submitOvertime()">Надіслати</button>
-            </div>
-            <button onclick="toggleSection('overtimeSection')">Розгорнути</button>
-        </section>
-
-       
-        <!-- Missing Day -->
-        <section class="card">
-            <h3><span class="icon">😴</span> Missing Day</h3>
-            <div class="form-section" id="missingSection">
-                <label>Дата:
-                    <input type="date" id="missingDate">
-                </label>
-                <label><input type="checkbox" onclick="setToday('missingDate')"> сьогодні</label>
-                <label>Причина:
-                    <input type="text" id="missingReason">
-                </label>
-                <label>Години:
-                    <input type="number" id="missingHours" step="0.1">
-                </label>
-                <button onclick="submitMissing()">Надіслати</button>
-            </div>
-            <button onclick="toggleSection('missingSection')">Розгорнути</button>
-        </section>
 
         <!-- Over Time CRM -->
         <section class="card">
-            <h3><span class="icon">📅</span> Over Time CRM</h3>
+            <h3><span class="icon">📅</span> CRM Календар</h3>
             <a href="/html/admin/admin_viewList.html">
                 <button>Переглянути</button>
             </a>
         </section>
 
-         <!-- Contacts -->
+        <!-- Contacts -->
         <section class="card">
-            <h3><span class="icon">📇</span> Contacts</h3>
-            <a href="admin_contacts.html">
+            <h3><span class="icon">📇</span> Контакти</h3>
+            <a href="/html/admin/admin_contacts.html">
                 <button>Переглянути контакти</button>
+            </a>
+        </section>
+
+        <section class="card">
+            <h3><span class="icon">🏢</span>Департаменти</h3>
+            <a href="/html/admin/admin_department.html">
+                <button>Перейти до департаментів</button>
             </a>
         </section>
 
         <!-- Settings -->
         <section class="card">
-            <h3><span class="icon">⚙️</span> Setting</h3>
-            <p>In progress</p>
+            <h3><span class="icon">⚙️</span> Налаштування</h3>
+            <a href="/html/admin/admin_settings.html">
+                <button>Керувати департментами</button>
+            </a>
         </section>
+
+        
+
     </main>
 </div>
 <script src="../../js/dashboard/admin/admin_dashboard.js"></script>

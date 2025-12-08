@@ -55,6 +55,13 @@ header {
   font-weight: bold;
 }
 
+.controls select {
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
 /* Calendar container */
 .calendar-container {
   padding: 20px;
@@ -94,6 +101,13 @@ header {
   transform: scale(1.03);
 }
 
+.day.empty {
+  background: transparent;
+  border: none;
+  cursor: default;
+}
+
+/* стани */
 .overtime {
   background-color: #c8e6c9; /* зелений */
 }
@@ -113,7 +127,20 @@ header {
   border-radius: 4px;
 }
 
-/* "+" кнопка */
+/* multiplier (лівий низ) */
+.day .multiplier {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #333;
+  background: rgba(255,255,255,0.6);
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+/* "+" кнопка (якщо немає події) */
 .add-btn {
   position: absolute;
   top: 5px;
@@ -129,17 +156,44 @@ header {
   text-align: center;
   cursor: pointer;
 }
+
 .add-btn:hover {
   background: #388e3c;
 }
 
+/* ✏️ кнопка (якщо подія вже є) */
+.edit-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #ff9800;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 4px;
+  padding: 0 6px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background: #f57c00;
+}
+
 /* Modal */
 .modal.hidden { display: none; }
+
 .modal {
-  position: fixed; inset: 0;
+  position: fixed;
+  inset: 0;
   background: rgba(0,0,0,0.5);
-  display: flex; justify-content: center; align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
 .modal-content {
   background: white;
   padding: 20px;
@@ -148,6 +202,7 @@ header {
   max-width: 90%;
   position: relative;
 }
+
 #closeModal,
 #closeAddModal {
   position: absolute;
@@ -157,7 +212,7 @@ header {
   cursor: pointer;
 }
 
-/* ✅ Summary block */
+/* Summary */
 .summary {
   margin-top: 20px;
   padding: 15px;
@@ -166,6 +221,42 @@ header {
   border-radius: 6px;
   font-size: 16px;
   font-weight: bold;
-  text-align: center;
   color: #856404;
+}
+
+.summary ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.summary li {
+  margin: 5px 0;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary li::before {
+  content: "•";
+  color: #555;
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* кнопка видалення у модалці */
+.danger-btn {
+  margin-left: 10px;
+  padding: 6px 10px;
+  background: #e53935;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.danger-btn:hover {
+  background: #c62828;
 }
