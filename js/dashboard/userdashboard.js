@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://3.66.197.165:8080/api'; // поки не використовується, але можна лишити
+const API_BASE_URL = '/api'; // поки не використовується, але можна лишити
 
 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 if (!token) {

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://3.66.197.165:8080/api';
+const API_BASE_URL = '/api';
 
 // ===== DOM READY =====
 document.addEventListener('DOMContentLoaded', () => {
