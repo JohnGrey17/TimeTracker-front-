@@ -1,4 +1,4 @@
-const API_BASE_URL = '/api';
+const API_BASE_URL = "http://localhost:8080/api";
 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 if (!token) {
   alert('⛔ Ви не авторизовані!');
@@ -93,7 +93,17 @@ function createTableHead(year, month, daysInMonth) {
     headRow.appendChild(th);
   }
 
-  const extraHeaders = ["💰 Ставка", "⏱️ x1", "⏱️ x1.5", "⏱️ x2", "🚕 Таксі", "🚫 Пропущені години", "💵 До виплати"];
+  const extraHeaders = [
+    "💰 Ставка",
+    "⏱️ x1",
+    "⏱️ x1.5",
+    "⏱️ x2",
+    "🎁 Бонуси",
+    "🚫 Пропущені години",
+    "💰 Сума овертаймів",
+    "💵 Загальна підрахована сума"
+  ];
+
   extraHeaders.forEach(label => {
     const th = document.createElement('th');
     th.textContent = label;
@@ -153,6 +163,12 @@ async function loadCRMData() {
       const over = overtimeMap[dateStr];
       const miss = missingMap[dateStr];
 
+      const jsDate = new Date(year, month - 1, d);
+      const dayOfWeek = jsDate.getDay(); // 0 = Нд, 6 = Сб
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        cell.classList.add('weekend');
+      }
+
       if (over) {
         cell.classList.add('overtime');
         cell.innerHTML = `<div class="cell-top">${over.overtimeHours} год</div>`;
@@ -187,7 +203,6 @@ async function loadCRMData() {
       newSalary.value = user.baseSalary ?? 0;
       salaryModal.classList.remove('hidden');
     });
-    tr.appendChild(salaryTd);
 
     // === дані по коефіцієнтах ===
     const x1 = sumByMultiplier(user.overtimesDay, 1);
@@ -211,17 +226,52 @@ async function loadCRMData() {
       return td;
     }
 
-    tr.appendChild(createDoubleCell(x1, sumX1));
-    tr.appendChild(createDoubleCell(x15, sumX15));
-    tr.appendChild(createDoubleCell(x2, sumX2));
-    const taxiTd = document.createElement('td');
-    taxiTd.textContent = '—';
-    tr.appendChild(taxiTd);
-    tr.appendChild(createDoubleCell(missing, sumMissing, true));
+    const x1Td = createDoubleCell(x1, sumX1);
+    const x15Td = createDoubleCell(x15, sumX15);
+    const x2Td = createDoubleCell(x2, sumX2);
+    const missingTd = createDoubleCell(missing, sumMissing, true);
 
-    // === Total ===
+    // === Сума овертаймів (на фронті) ===
+    const overtimeTotalAmount = sumX1 + sumX15 + sumX2;
+    const overtimeTotalTd = document.createElement('td');
+    overtimeTotalTd.textContent = overtimeTotalAmount.toFixed(2);
+
+    // === Загальна підрахована сума (база з бекенду) ===
+    const baseTotal = Number(user.totalSum ?? 0);
     const totalTd = document.createElement('td');
-    totalTd.textContent = user.totalSum?.toFixed(2) ?? '0.00';
+    totalTd.textContent = baseTotal.toFixed(2);
+
+    // === КОЛОНКА "Бонуси" (редагуємо через prompt) ===
+    const bonusTd = document.createElement('td');
+    bonusTd.classList.add('bonus-cell');
+    let bonus = 0;
+    bonusTd.textContent = bonus.toFixed(2);
+
+    bonusTd.addEventListener('click', () => {
+      const current = bonus;
+      const inputVal = prompt('Введіть суму бонусів (грн):', current.toFixed(2));
+      if (inputVal === null) return; // натиснули Cancel
+
+      const parsed = parseFloat(inputVal.replace(',', '.'));
+      if (isNaN(parsed) || parsed < 0) {
+        alert('❌ Введіть коректне число!');
+        return;
+      }
+
+      bonus = parsed;
+      bonusTd.textContent = bonus.toFixed(2);
+      const finalTotal = baseTotal + bonus;
+      totalTd.textContent = finalTotal.toFixed(2);
+    });
+
+    // === додаємо комірки у правильному порядку ===
+    tr.appendChild(salaryTd);
+    tr.appendChild(x1Td);
+    tr.appendChild(x15Td);
+    tr.appendChild(x2Td);
+    tr.appendChild(bonusTd);
+    tr.appendChild(missingTd);
+    tr.appendChild(overtimeTotalTd);
     tr.appendChild(totalTd);
 
     crmBody.appendChild(tr);
@@ -262,13 +312,12 @@ saveSalaryBtn.onclick = async () => {
   const ok = await postJson(`${API_BASE_URL}/users/sal`, body);
 
   if (ok) {
-    // ✅ зберігаємо поточні фільтри
     localStorage.setItem('selectedDepartment', departmentSelect.value);
     localStorage.setItem('selectedYear', yearSelect.value);
     localStorage.setItem('selectedMonth', monthSelect.value);
 
     alert('✅ Зарплату оновлено!');
-    window.location.reload(); // перезавантажуємо сторінку
+    window.location.reload();
   } else {
     alert('❌ Помилка при оновленні зарплати!');
   }
@@ -298,7 +347,6 @@ loadDepartments().then(() => {
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
 
-  // якщо нічого не збережено — підставляємо поточну дату
   yearSelect.value = year || currentYear;
   monthSelect.value = month || currentMonth;
 

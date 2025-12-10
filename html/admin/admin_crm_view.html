@@ -3,32 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <title>Synergy</title>
+
+  <!-- ✅ ВАЖЛИВО для адаптивності -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="/css/admin/admin_crm_view.css">
 </head>
 <body>
+
   <header>
-  <div class="header-left">
-    <button id="homeBtn" class="home-btn">🏠 Головна</button>
-  </div>
-  <div class="controls">
-    <select id="departmentSelect">
-      <option value="" disabled selected>Відділ</option>
-    </select>
 
-    <select id="yearSelect">
-      <option value="" disabled selected>Рік</option>
-    </select>
+    <!-- ✅ ЛІВА КНОПКА: НАЗАД ДО СПИСКУ -->
+    <div class="header-left">
+      <a href="/html/admin/admin_viewList.html">
+        <button class="home-btn">⬅ До списку</button>
+      </a>
+    </div>
 
-    <select id="monthSelect">
-      <option value="" disabled selected>Місяць</option>
-    </select>
+    <!-- ✅ ЦЕНТР: ФІЛЬТРИ -->
+    <div class="controls">
+      <select id="departmentSelect">
+        <option value="" disabled selected>Відділ</option>
+      </select>
 
-    <select id="viewModeSelect">
-      <option value="crm" selected>CRM</option>
-      <option value="calendar">Календар</option>
-    </select>
-  </div>
-</header>
+      <select id="yearSelect">
+        <option value="" disabled selected>Рік</option>
+      </select>
+
+      <select id="monthSelect">
+        <option value="" disabled selected>Місяць</option>
+      </select>
+
+      <select id="viewModeSelect">
+        <option value="crm" selected>CRM</option>
+        <option value="calendar">Календар</option>
+      </select>
+    </div>
+
+    <!-- ✅ ПРАВА КНОПКА: ГОЛОВНА -->
+    <div class="header-right">
+      <button id="homeBtn" class="home-btn">🏠 Головна</button>
+    </div>
+
+  </header>
 
   <main>
     <table id="crmTable">

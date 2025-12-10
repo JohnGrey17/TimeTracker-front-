@@ -1,3 +1,9 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Segoe UI', sans-serif;
   background: #ffeeba;
@@ -5,16 +11,21 @@ body {
   padding: 0;
 }
 
+/* HEADER */
 header {
   background: #f4a261;
   padding: 15px 25px;
   display: flex;
   justify-content: center;
+  position: relative;
+  flex-wrap: wrap;
 }
 
 .controls {
   display: flex;
   gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .controls select {
@@ -27,15 +38,18 @@ header {
   font-weight: bold;
 }
 
+/* MAIN + TABLE */
 main {
   padding: 20px;
   display: flex;
   justify-content: center;
+  overflow-x: auto;
 }
 
 table {
   border-collapse: collapse;
   width: 95%;
+  max-width: 1600px;
   background: #fffdf0;
   border-radius: 10px;
   overflow: hidden;
@@ -67,21 +81,49 @@ tr:nth-child(even) {
   width: 35px;
 }
 
-.overtime {
-  background: #b6e7b6;
-  cursor: pointer;
+/* ===== ВИХІДНІ ДНІ ===== */
+/* хедер вихідних */
+th.weekend {
+  background: #f0f0f0;
+  color: #a00;
+  font-weight: bold;
 }
 
-.missing {
-  background: #ffb3b3;
-  cursor: pointer;
+/* клітинки вихідних без овертайму/пропуску */
+td.weekend:not(.overtime):not(.missing) {
+  background: #f0f0f0;
+  color: #a00;
+  font-weight: bold;
 }
 
-.salary-cell {
+/* STATUS */
+.overtime { background: #b6e7b6; cursor: pointer; }
+.missing  { background: #ffb3b3; cursor: pointer; }
+.salary-cell { cursor: pointer; background: #e6f2ff; }
+
+/* 🔹 Колонка "Бонуси" */
+.bonus-cell {
   cursor: pointer;
-  background: #e6f2ff;
+  background: #fff3cd;
+  text-align: right;
+  white-space: nowrap;
+  padding: 4px 6px;
 }
 
+/* інпут бонусів, ширина керується JS */
+.bonus-input {
+  min-width: 40px;
+  /* без жорсткої max-width, щоб не обрізало */
+  padding: 2px 3px;
+  font-size: 12px;
+  font-family: inherit;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  text-align: right;
+  box-sizing: border-box;
+}
+
+/* MODAL */
 .modal.hidden { display: none; }
 .modal {
   position: fixed;
@@ -101,7 +143,9 @@ tr:nth-child(even) {
   position: relative;
 }
 
-#closeModal, #closeSalaryModal {
+#closeModal,
+#closeSalaryModal,
+#closeBonusModal {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -109,29 +153,7 @@ tr:nth-child(even) {
   cursor: pointer;
 }
 
-#newSalary {
-  width: 90%;
-  padding: 8px;
-  margin-top: 20px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 15px;
-}
-
-#saveSalaryBtn {
-  margin-top: 15px;
-  background: #4caf50;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-#saveSalaryBtn:hover {
-  background: #388e3c;
-}
-
+/* HEADER LEFT */
 .header-left {
   position: absolute;
   left: 20px;
@@ -139,69 +161,44 @@ tr:nth-child(even) {
 }
 
 .home-btn {
-  background: #457b9d;
-  color: white;
+  background: #ffe0a3;
+  color: #222;
   border: none;
   border-radius: 8px;
   padding: 8px 14px;
   font-size: 15px;
   cursor: pointer;
-  transition: background 0.2s ease;
   font-weight: bold;
 }
 
-.home-btn:hover {
-  background: #1d3557;
-}
-.day-number {
-  font-weight: bold;
-  font-size: 13px;
+/* CELL CONTENT */
+.cell-top    { color: #004085; font-weight: 600; font-size: 13px; }
+.cell-bottom { color: #155724; font-size: 12px; }
+.missing .cell-bottom { color: #b71c1c; }
+
+/* USER FOCUS */
+.user-focus { transform: scale(1.2); margin-right: 6px; cursor: pointer; }
+tr.dimmed   { opacity: 0.3; }
+
+/* ✅ RESPONSIVE */
+@media (max-width: 1366px) {
+  th, td { font-size: 12px; padding: 6px; }
 }
 
-.day-name {
-  font-size: 11px;
-  color: #555;
-  margin-top: 2px;
+@media (max-width: 992px) {
+  .header-left { position: static; margin-bottom: 10px; }
+  main { padding: 10px; }
+  th, td { font-size: 11px; padding: 5px; }
 }
 
-.weekend {
-  background: #f0f0f0 !important;
-  color: #a00;
+@media (max-width: 600px) {
+  .controls select { width: 100%; max-width: 260px; }
+  .home-btn { font-size: 13px; padding: 6px 10px; }
+  .modal-content { width: 95%; padding: 15px; }
 }
 
-th.date-col {
-  vertical-align: top;
-  padding: 4px;
-  min-width: 40px;
-}
-
-/* ===== NEW: inside-cell dual display ===== */
-.cell-top {
-  color: #004085; /* години — сині */
-  font-weight: 600;
-  font-size: 13px;
-  line-height: 1.1;
-}
-
-.cell-bottom {
-  color: #155724; /* сума — зелена */
-  font-size: 12px;
-  font-weight: 500;
-  margin-top: 2px;
-}
-
-.missing .cell-bottom {
-  color: #b71c1c; /* червона для штрафів */
-}
-
-/* ===== NEW: focus checkbox near names ===== */
-.user-focus {
-  transform: scale(1.2);
-  margin-right: 6px;
-  cursor: pointer;
-}
-
-tr.dimmed {
-  opacity: 0.3;
-  transition: opacity 0.2s ease;
+.header-right {
+  position: absolute;
+  right: 20px;
+  top: 15px;
 }

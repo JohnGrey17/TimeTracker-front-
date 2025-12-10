@@ -1,5 +1,5 @@
 // ===== CONFIG =====
-const API_BASE_URL = '/api';
+const API_BASE_URL = "http://localhost:8080/api";
 
 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 if (!token) {
@@ -213,10 +213,9 @@ async function loadCalendar(year, month) {
   // зведення
   summaryEl.innerHTML = `
     <ul>
-      <li>🕓 Overtime ×1: ${overtimeX1} год</li>
-      <li>🕓 Overtime ×1.5: ${overtimeX15} год</li>
-      <li>🕓 Overtime ×2: ${overtimeX2} год</li>
-      <li>😴 Missing: ${missingSum} год</li>
+      <li>🕓 Перепрацювання ×1: ${overtimeX1} год</li>
+      <li>🕓 Перепрацювання ×1.5: ${overtimeX15} год</li>
+      <li>😴 Пропущені години: ${missingSum} год</li>
     </ul>
   `;
 }
