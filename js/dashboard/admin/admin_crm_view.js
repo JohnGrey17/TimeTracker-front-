@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8080/api";
+const API_BASE_URL = "/api";
 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 if (!token) {
   alert('⛔ Ви не авторизовані!');
@@ -11,16 +11,35 @@ const monthSelect = document.getElementById('monthSelect');
 const viewModeSelect = document.getElementById('viewModeSelect');
 const crmHead = document.getElementById('crmHead');
 const crmBody = document.getElementById('crmBody');
+
 const modal = document.getElementById('infoModal');
 const closeModal = document.getElementById('closeModal');
 const modalTitle = document.getElementById('modalTitle');
 const modalContent = document.getElementById('modalContent');
+
 const salaryModal = document.getElementById('salaryModal');
 const closeSalaryModal = document.getElementById('closeSalaryModal');
 const newSalary = document.getElementById('newSalary');
 const saveSalaryBtn = document.getElementById('saveSalaryBtn');
 
+// ===== бонусна модалка =====
+const bonusModal = document.getElementById('bonusModal');
+const closeBonusModal = document.getElementById('closeBonusModal');
+const bonusModalTitle = document.getElementById('bonusModalTitle');
+const bonusTableBody = document.querySelector('#bonusTable tbody');
+const bonusDateInput = document.getElementById('bonusDate');
+const bonusReasonInput = document.getElementById('bonusReason');
+const bonusSumInput = document.getElementById('bonusSum');
+const saveBonusBtn = document.getElementById('saveBonusBtn');
+const resetBonusFormBtn = document.getElementById('resetBonusFormBtn');
+
 let id = null;
+
+// для роботи з бонусами
+let currentBonusUserId = null;
+let currentBonusYear = null;
+let currentBonusMonth = null;
+let editingBonusId = null;
 
 // ===== Helpers =====
 async function getJson(url) {
@@ -236,32 +255,19 @@ async function loadCRMData() {
     const overtimeTotalTd = document.createElement('td');
     overtimeTotalTd.textContent = overtimeTotalAmount.toFixed(2);
 
-    // === Загальна підрахована сума (база з бекенду) ===
+    // === Загальна підрахована сума (з бекенду) ===
     const baseTotal = Number(user.totalSum ?? 0);
     const totalTd = document.createElement('td');
     totalTd.textContent = baseTotal.toFixed(2);
 
-    // === КОЛОНКА "Бонуси" (редагуємо через prompt) ===
+    // === КОЛОНКА "Бонуси" (відкриває модалку з усіма бонусами) ===
     const bonusTd = document.createElement('td');
     bonusTd.classList.add('bonus-cell');
-    let bonus = 0;
-    bonusTd.textContent = bonus.toFixed(2);
+    const bonusValue = Number(user.bonusTotalSum ?? 0);
+    bonusTd.textContent = bonusValue.toFixed(2);
 
     bonusTd.addEventListener('click', () => {
-      const current = bonus;
-      const inputVal = prompt('Введіть суму бонусів (грн):', current.toFixed(2));
-      if (inputVal === null) return; // натиснули Cancel
-
-      const parsed = parseFloat(inputVal.replace(',', '.'));
-      if (isNaN(parsed) || parsed < 0) {
-        alert('❌ Введіть коректне число!');
-        return;
-      }
-
-      bonus = parsed;
-      bonusTd.textContent = bonus.toFixed(2);
-      const finalTotal = baseTotal + bonus;
-      totalTd.textContent = finalTotal.toFixed(2);
+      openBonusModal(user.userId, year, month);
     });
 
     // === додаємо комірки у правильному порядку ===
@@ -321,6 +327,178 @@ saveSalaryBtn.onclick = async () => {
   } else {
     alert('❌ Помилка при оновленні зарплати!');
   }
+};
+
+// ===== ЛОГІКА БОНУСІВ =====
+function resetBonusForm() {
+  bonusDateInput.value = '';
+  bonusReasonInput.value = '';
+  bonusSumInput.value = '';
+  editingBonusId = null;
+}
+
+async function openBonusModal(userId, year, month) {
+  currentBonusUserId = userId;
+  currentBonusYear = year;
+  currentBonusMonth = month;
+  editingBonusId = null;
+
+  bonusModalTitle.textContent = `Бонуси за ${month}.${year} (userId: ${userId})`;
+  resetBonusForm();
+
+  bonusModal.classList.remove('hidden');
+
+  try {
+    const bonuses = await getJson(
+      `${API_BASE_URL}/bonus/getBy/month?userId=${userId}&year=${year}&month=${month}`
+    );
+    renderBonusList(bonuses);
+  } catch (e) {
+    console.error(e);
+    bonusTableBody.innerHTML = `<tr><td colspan="4">❌ Помилка завантаження бонусів</td></tr>`;
+  }
+}
+
+function renderBonusList(bonuses) {
+  bonusTableBody.innerHTML = '';
+
+  if (!bonuses || bonuses.length === 0) {
+    bonusTableBody.innerHTML = `<tr><td colspan="4">Бонусів за цей місяць немає</td></tr>`;
+    return;
+  }
+
+  bonuses.forEach(b => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${b.date}</td>
+      <td>${b.reason}</td>
+      <td>${Number(b.sum ?? 0).toFixed(2)}</td>
+      <td>
+        <button class="bonus-edit-btn" data-id="${b.id}">✏</button>
+        <button class="bonus-delete-btn" data-id="${b.id}">🗑</button>
+      </td>
+    `;
+    bonusTableBody.appendChild(tr);
+  });
+
+  // edit
+  document.querySelectorAll('.bonus-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const bonusId = btn.dataset.id;
+      const bonus = bonuses.find(b => String(b.id) === String(bonusId));
+      if (!bonus) return;
+
+      editingBonusId = bonus.id;
+      bonusDateInput.value = bonus.date;      // LocalDate string yyyy-MM-dd
+      bonusReasonInput.value = bonus.reason;
+      bonusSumInput.value = bonus.sum;
+    });
+  });
+
+  // delete
+  document.querySelectorAll('.bonus-delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const bonusId = btn.dataset.id;
+      if (!confirm('Видалити цей бонус?')) return;
+
+      try {
+        const resp = await fetch(
+          `${API_BASE_URL}/bonus/delete?userId=${currentBonusUserId}&bonusId=${bonusId}`,
+          {
+            method: 'DELETE',
+            headers: { Authorization: 'Bearer ' + token }
+          }
+        );
+
+        if (resp.status === 204 || resp.ok) {
+          await reloadBonusesAndCrm();
+        } else {
+          alert('❌ Помилка при видаленні бонусу');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('❌ Помилка при видаленні бонусу');
+      }
+    });
+  });
+}
+
+async function reloadBonusesAndCrm() {
+  // оновлюємо список бонусів в модалці
+  try {
+    const bonuses = await getJson(
+      `${API_BASE_URL}/bonus/getBy/month?userId=${currentBonusUserId}&year=${currentBonusYear}&month=${currentBonusMonth}`
+    );
+    renderBonusList(bonuses);
+  } catch (e) {
+    console.error(e);
+  }
+
+  // оновлюємо CRM-таблицю (щоб підтягнути новий bonusTotalSum та totalSum)
+  await loadCRMData();
+}
+
+saveBonusBtn.onclick = async () => {
+  if (!currentBonusUserId || !currentBonusYear || !currentBonusMonth) {
+    return alert('❌ Немає поточного користувача або періоду');
+  }
+
+  const date = bonusDateInput.value;
+  const reason = bonusReasonInput.value.trim();
+  const sumVal = parseFloat(bonusSumInput.value);
+
+  if (!date) return alert('❌ Оберіть дату');
+  if (!reason) return alert('❌ Вкажіть причину');
+  if (isNaN(sumVal) || sumVal <= 0) return alert('❌ Сума має бути більшою за 0');
+
+  try {
+    if (editingBonusId == null) {
+      // створення бонусу
+      const body = {
+        date: date,
+        reason: reason,
+        sum: sumVal
+      };
+
+      const ok = await postJson(
+        `${API_BASE_URL}/bonus/add?userId=${currentBonusUserId}`,
+        body
+      );
+
+      if (!ok) {
+        alert('❌ Помилка при створенні бонусу');
+        return;
+      }
+    } else {
+      // оновлення бонусу
+      const body = {
+        reason: reason,
+        bonusSum: sumVal
+      };
+
+      const ok = await postJson(
+        `${API_BASE_URL}/bonus/update?userId=${currentBonusUserId}&bonusId=${editingBonusId}`,
+        body
+      );
+
+      if (!ok) {
+        alert('❌ Помилка при оновленні бонусу');
+        return;
+      }
+    }
+
+    resetBonusForm();
+    await reloadBonusesAndCrm();
+  } catch (e) {
+    console.error(e);
+    alert('❌ Сталася помилка при збереженні бонусу');
+  }
+};
+
+resetBonusFormBtn.onclick = () => resetBonusForm();
+closeBonusModal.onclick = () => {
+  bonusModal.classList.add('hidden');
+  resetBonusForm();
 };
 
 // ===== SWITCH VIEW =====

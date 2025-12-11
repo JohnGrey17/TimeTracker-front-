@@ -110,10 +110,9 @@ td.weekend:not(.overtime):not(.missing) {
   padding: 4px 6px;
 }
 
-/* інпут бонусів, ширина керується JS */
+/* інпут бонусів (якщо колись захочеш вбудувати в клітинку) */
 .bonus-input {
   min-width: 40px;
-  /* без жорсткої max-width, щоб не обрізало */
   padding: 2px 3px;
   font-size: 12px;
   font-family: inherit;
@@ -143,6 +142,12 @@ td.weekend:not(.overtime):not(.missing) {
   position: relative;
 }
 
+/* ширша модалка для бонусів */
+#bonusModal .modal-content {
+  width: 650px;
+  max-width: 95%;
+}
+
 #closeModal,
 #closeSalaryModal,
 #closeBonusModal {
@@ -151,6 +156,50 @@ td.weekend:not(.overtime):not(.missing) {
   right: 10px;
   font-size: 20px;
   cursor: pointer;
+}
+
+/* таблиця в модалці бонусів */
+#bonusTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+#bonusTable th,
+#bonusTable td {
+  font-size: 12px;
+  padding: 5px;
+}
+
+.bonus-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.bonus-form input[type="date"],
+.bonus-form input[type="text"],
+.bonus-form input[type="number"] {
+  flex: 1 1 120px;
+  padding: 5px 7px;
+  font-size: 13px;
+}
+
+.bonus-form button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+#saveBonusBtn {
+  background: #b6e7b6;
+}
+
+#resetBonusFormBtn {
+  background: #ffe0a3;
 }
 
 /* HEADER LEFT */

@@ -11,68 +11,99 @@
 </head>
 <body>
 
-  <header>
+<header>
 
-    <!-- ✅ ЛІВА КНОПКА: НАЗАД ДО СПИСКУ -->
-    <div class="header-left">
-      <a href="/html/admin/admin_viewList.html">
-        <button class="home-btn">⬅ До списку</button>
-      </a>
-    </div>
+  <!-- ✅ ЛІВА КНОПКА: НАЗАД ДО СПИСКУ -->
+  <div class="header-left">
+    <a href="/html/admin/admin_viewList.html">
+      <button class="home-btn">⬅ До списку</button>
+    </a>
+  </div>
 
-    <!-- ✅ ЦЕНТР: ФІЛЬТРИ -->
-    <div class="controls">
-      <select id="departmentSelect">
-        <option value="" disabled selected>Відділ</option>
-      </select>
+  <!-- ✅ ЦЕНТР: ФІЛЬТРИ -->
+  <div class="controls">
+    <select id="departmentSelect">
+      <option value="" disabled selected>Відділ</option>
+    </select>
 
-      <select id="yearSelect">
-        <option value="" disabled selected>Рік</option>
-      </select>
+    <select id="yearSelect">
+      <option value="" disabled selected>Рік</option>
+    </select>
 
-      <select id="monthSelect">
-        <option value="" disabled selected>Місяць</option>
-      </select>
+    <select id="monthSelect">
+      <option value="" disabled selected>Місяць</option>
+    </select>
 
-      <select id="viewModeSelect">
-        <option value="crm" selected>CRM</option>
-        <option value="calendar">Календар</option>
-      </select>
-    </div>
+    <select id="viewModeSelect">
+      <option value="crm" selected>CRM</option>
+      <option value="calendar">Календар</option>
+    </select>
+  </div>
 
-    <!-- ✅ ПРАВА КНОПКА: ГОЛОВНА -->
-    <div class="header-right">
-      <button id="homeBtn" class="home-btn">🏠 Головна</button>
-    </div>
+  <!-- ✅ ПРАВА КНОПКА: ГОЛОВНА -->
+  <div class="header-right">
+    <button id="homeBtn" class="home-btn">🏠 Головна</button>
+  </div>
 
-  </header>
+</header>
 
-  <main>
-    <table id="crmTable">
-      <thead id="crmHead"></thead>
-      <tbody id="crmBody"></tbody>
+<main>
+  <table id="crmTable">
+    <thead id="crmHead"></thead>
+    <tbody id="crmBody"></tbody>
+  </table>
+</main>
+
+<!-- Модалка інформації по клітинці -->
+<div id="infoModal" class="modal hidden">
+  <div class="modal-content">
+    <span id="closeModal">&times;</span>
+    <h2 id="modalTitle"></h2>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- Модалка для ЗП -->
+<div id="salaryModal" class="modal hidden">
+  <div class="modal-content">
+    <span id="closeSalaryModal">&times;</span>
+    <h2>Редагування ЗП</h2>
+    <input type="number" id="newSalary" placeholder="Нова сума">
+    <button id="saveSalaryBtn">💾 Зберегти</button>
+  </div>
+</div>
+
+<!-- Модалка для бонусів -->
+<div id="bonusModal" class="modal hidden">
+  <div class="modal-content bonus-modal">
+    <span id="closeBonusModal">&times;</span>
+    <h2 id="bonusModalTitle">Бонуси за місяць</h2>
+
+    <table id="bonusTable">
+      <thead>
+      <tr>
+        <th>Дата</th>
+        <th>Причина</th>
+        <th>Сума</th>
+        <th>Дії</th>
+      </tr>
+      </thead>
+      <tbody>
+      <!-- наповнюється JS -->
+      </tbody>
     </table>
-  </main>
 
-  <!-- Модалка -->
-  <div id="infoModal" class="modal hidden">
-    <div class="modal-content">
-      <span id="closeModal">&times;</span>
-      <h2 id="modalTitle"></h2>
-      <div id="modalContent"></div>
+    <h3>Додати / редагувати бонус</h3>
+    <div class="bonus-form">
+      <input type="date" id="bonusDate">
+      <input type="text" id="bonusReason" placeholder="Причина">
+      <input type="number" step="0.01" id="bonusSum" placeholder="Сума">
+      <button id="saveBonusBtn">💾 Зберегти</button>
+      <button id="resetBonusFormBtn">🧹 Очистити</button>
     </div>
   </div>
+</div>
 
-  <!-- Модалка для ЗП -->
-  <div id="salaryModal" class="modal hidden">
-    <div class="modal-content">
-      <span id="closeSalaryModal">&times;</span>
-      <h2>Редагування ЗП</h2>
-      <input type="number" id="newSalary" placeholder="Нова сума">
-      <button id="saveSalaryBtn">💾 Зберегти</button>
-    </div>
-  </div>
-
-  <script src="/js/dashboard/admin/admin_crm_view.js"></script>
+<script src="/js/dashboard/admin/admin_crm_view.js"></script>
 </body>
 </html>
