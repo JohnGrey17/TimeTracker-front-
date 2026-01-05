@@ -240,10 +240,10 @@ async function loadCalendar(year, month, userId) {
 
   summaryEl.innerHTML = `
     <ul>
-      <li>🕓 Overtime ×1: ${overtimeX1} год</li>
-      <li>🕓 Overtime ×1.5: ${overtimeX15} год</li>
-      <li>🕓 Overtime ×2: ${overtimeX2} год</li>
-      <li>😴 Missing: ${missingSum} год</li>
+      <li>🕓 Перепрацювання ×1: ${overtimeX1} год</li>
+      <li>🕓 Пепепрацювання ×1.5: ${overtimeX15} год</li>
+      <li>🕓 Перепрацювання ×2: ${overtimeX2} год</li>
+      <li>😴 Пропущені години ${missingSum} год</li>
     </ul>
   `;
 }
@@ -460,7 +460,7 @@ saveEntryBtn.onclick = async () => {
   }
 
   if (type === 'overtime') {
-    const max = weekend ? 8 : 5;
+    const max = weekend ? 15 : 5;
     if (hours > max) {
       alert(`🛑 На цю дату можна не більше ${max} год овертайму.`);
       return;

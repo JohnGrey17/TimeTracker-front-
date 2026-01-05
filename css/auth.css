@@ -82,3 +82,121 @@ form button:hover {
   color: #7b2cbf;
   text-decoration: underline;
 }
+
+/* ✅ ДОДАНО: forgot line */
+.forgot-line {
+  margin-top: 6px;
+}
+
+/* ✅ ДОДАНО: MODAL STYLES */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 18px;
+  z-index: 9999;
+}
+
+.modal {
+  width: 360px;
+  max-width: 100%;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.20);
+  padding: 16px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-hint {
+  margin: 8px 0 10px 0;
+  font-size: 13px;
+  color: #444;
+}
+
+.modal input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.modal button {
+  width: 100%;
+  padding: 10px;
+  background: #f4a261;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 6px;
+}
+
+.modal button:hover {
+  background: #e76f51;
+}
+
+.modal-error {
+  background: #ffe5e5;
+  color: #a40000;
+  border: 1px solid #ffbcbc;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.modal-timer {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #555;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.modal-link {
+  width: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  color: #7b2cbf !important;
+  text-decoration: underline;
+  border: none !important;
+  cursor: pointer;
+  font-size: 13px !important;
+}
+
+.modal-footer-timer {
+  font-size: 12px;
+  color: #555;
+}

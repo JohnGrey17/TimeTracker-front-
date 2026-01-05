@@ -1,4 +1,4 @@
-const API_BASE_URL = "/api"; 
+const API_BASE_URL = "/api";
 
 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 if (!token) {

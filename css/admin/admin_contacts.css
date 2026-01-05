@@ -122,3 +122,35 @@ header {
   cursor: pointer;
 }
 
+/* ✅ ДОДАНО: кнопка видалення */
+.contact-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.contact-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.delete-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 6px;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+
+.delete-btn:hover {
+  background: #ffe0e0;
+}
+
+.delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

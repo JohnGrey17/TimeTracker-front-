@@ -22,7 +22,13 @@
         <input type="password" id="loginPassword" placeholder="Пароль" required />
         <button type="submit">Увійти</button>
       </form>
+
       <p>Немає акаунту? <a href="#" onclick="showRegister()">Зареєструватися</a></p>
+
+      <!-- ✅ ДОДАНО: Забули пароль -->
+      <p class="forgot-line">
+        <a href="#" onclick="openForgotPasswordModal()">Забули пароль?</a>
+      </p>
     </div>
 
     <!-- РЕЄСТРАЦІЯ -->
@@ -44,6 +50,56 @@
         <button type="submit">Зареєструватися</button>
       </form>
       <p>Вже є акаунт? <a href="#" onclick="showLogin()">Увійти</a></p>
+    </div>
+  </div>
+
+  <!-- ✅ ДОДАНО: Forgot Password Modal -->
+  <div id="forgotModal" class="modal-overlay" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Відновлення паролю</h3>
+        <button class="modal-close" type="button" onclick="closeForgotPasswordModal()">×</button>
+      </div>
+
+      <div id="forgotError" class="modal-error" style="display:none;"></div>
+
+      <!-- Step 1: Email + отримати код -->
+      <div id="forgotStepEmail">
+        <p class="modal-hint">Введіть email — ми надішлемо код підтвердження.</p>
+
+        <input type="email" id="forgotEmail" placeholder="Email" required />
+
+        <button type="button" id="btnSendCode" onclick="requestResetCode()">
+          Отримати код
+        </button>
+
+        <div class="modal-timer" id="sendCodeTimer" style="display:none;">
+          Можна запросити новий код через: <span id="sendCodeCountdown">60</span> сек
+        </div>
+      </div>
+
+      <!-- Step 2: Code + new password + confirm -->
+      <div id="forgotStepConfirm" style="display:none;">
+        <p class="modal-hint">Введіть код з листа та новий пароль.</p>
+
+        <input type="text" id="forgotCode" placeholder="Код" inputmode="numeric" />
+        <input type="password" id="forgotNewPassword" placeholder="Новий пароль" />
+        <input type="password" id="forgotConfirmPassword" placeholder="Повторіть новий пароль" />
+
+        <button type="button" onclick="confirmResetPassword()">
+          Змінити пароль
+        </button>
+
+        <div class="modal-footer">
+          <button type="button" class="modal-link" id="btnResendCode" onclick="requestResetCode()">
+            Отримати код ще раз
+          </button>
+
+          <span class="modal-footer-timer" id="resendTimerText" style="display:none;">
+            (через <span id="resendCountdown">60</span> сек)
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 

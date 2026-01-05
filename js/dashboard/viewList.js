@@ -433,7 +433,7 @@ saveEntryBtn.onclick = async () => {
 
   // Обмеження по годинах для overtime
   if (type === 'overtime') {
-    const max = weekend ? 8 : 5;
+    const max = weekend ? 15 : 5;
     if (hours > max) {
       alert(`🛑 На цю дату можна не більше ${max} год овертайму.`);
       return;
