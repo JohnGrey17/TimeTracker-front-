@@ -3,24 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <title>Synergy</title>
-
-  <!-- ✅ ВАЖЛИВО для адаптивності -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <link rel="stylesheet" href="/css/admin/admin_crm_view.css">
 </head>
 <body>
 
 <header>
 
-  <!-- ✅ ЛІВА КНОПКА: НАЗАД ДО СПИСКУ -->
   <div class="header-left">
     <a href="/html/admin/admin_viewList.html">
       <button class="home-btn">⬅ До списку</button>
     </a>
   </div>
 
-  <!-- ✅ ЦЕНТР: ФІЛЬТРИ -->
   <div class="controls">
     <select id="departmentSelect">
       <option value="" disabled selected>Відділ</option>
@@ -40,7 +35,14 @@
     </select>
   </div>
 
-  <!-- ✅ ПРАВА КНОПКА: ГОЛОВНА -->
+  <!-- ✅ NEW: 4 перемикачі -->
+  <div class="period-switch" id="periodSwitch">
+    <button class="period-btn" data-period="first">1–15</button>
+    <button class="period-btn" data-period="second">16–кінець</button>
+    <button class="period-btn" data-period="payroll">Перепрац+Бонуси</button>
+    <button class="period-btn" data-period="overall">Загальний</button>
+  </div>
+
   <div class="header-right">
     <button id="homeBtn" class="home-btn">🏠 Головна</button>
   </div>
@@ -54,7 +56,6 @@
   </table>
 </main>
 
-<!-- Модалка інформації по клітинці -->
 <div id="infoModal" class="modal hidden">
   <div class="modal-content">
     <span id="closeModal">&times;</span>
@@ -63,7 +64,6 @@
   </div>
 </div>
 
-<!-- Модалка для ЗП -->
 <div id="salaryModal" class="modal hidden">
   <div class="modal-content">
     <span id="closeSalaryModal">&times;</span>
@@ -73,7 +73,6 @@
   </div>
 </div>
 
-<!-- Модалка для бонусів -->
 <div id="bonusModal" class="modal hidden">
   <div class="modal-content bonus-modal">
     <span id="closeBonusModal">&times;</span>
@@ -88,9 +87,7 @@
         <th>Дії</th>
       </tr>
       </thead>
-      <tbody>
-      <!-- наповнюється JS -->
-      </tbody>
+      <tbody></tbody>
     </table>
 
     <h3>Додати / редагувати бонус</h3>

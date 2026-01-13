@@ -1,4 +1,5 @@
-const API_BASE_URL = "/api";
+const API_BASE_URL = "http://localhost:8080/api";
+
 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 if (!token) {
   alert('⛔ Ви не авторизовані!');
@@ -41,6 +42,23 @@ let currentBonusYear = null;
 let currentBonusMonth = null;
 let editingBonusId = null;
 
+// ===== NEW: Period switch =====
+const periodSwitch = document.getElementById('periodSwitch');
+const periodButtons = periodSwitch ? periodSwitch.querySelectorAll('.period-btn') : [];
+const PERIOD_STORAGE_KEY = 'crmPeriodMode';
+
+// first | second | payroll | overall
+let crmPeriodMode = localStorage.getItem(PERIOD_STORAGE_KEY) || 'overall';
+
+function setActivePeriodButton() {
+  periodButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.period === crmPeriodMode));
+}
+
+function togglePeriodSwitchVisibility() {
+  if (!periodSwitch) return;
+  periodSwitch.style.display = (viewModeSelect.value === 'crm') ? 'flex' : 'none';
+}
+
 // ===== Helpers =====
 async function getJson(url) {
   const res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
@@ -64,7 +82,6 @@ async function postJson(url, body) {
 function initYearMonth() {
   const now = new Date();
   const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
   for (let y = 2022; y <= currentYear + 2; y++) {
     const opt = document.createElement('option');
     opt.value = y;
@@ -92,36 +109,97 @@ async function loadDepartments() {
   });
 }
 
+// ===== Period helpers =====
+function daysInMonth(year, month) {
+  return new Date(year, month, 0).getDate();
+}
+
+// yyyy-mm-dd -> day
+function getDayFromDateStr(dateStr) {
+  const parts = String(dateStr).split('-');
+  return parseInt(parts[2], 10);
+}
+function inRangeByDay(dateStr, startDay, endDay) {
+  const d = getDayFromDateStr(dateStr);
+  return d >= startDay && d <= endDay;
+}
+
+function getModeMeta(year, month) {
+  const dim = daysInMonth(year, month);
+
+  if (crmPeriodMode === 'first') {
+    return {
+      startDay: 1, endDay: 15,
+      showCalendar: true,
+      headers: ["💰 Ставка", "🚫 Пропущені години", "💵 Сумма до сплати"],
+    };
+  }
+
+  if (crmPeriodMode === 'second') {
+    return {
+      startDay: 16, endDay: dim,
+      showCalendar: true,
+      headers: ["💰 Ставка", "🚫 Пропущені години", "💵 Сумма до сплати"],
+    };
+  }
+
+ if (crmPeriodMode === 'payroll') {
+  return {
+    startDay: 1, endDay: dim,
+    showCalendar: false,
+    headers: ["💰 Ставка", "⏱️ x1", "⏱️ x1.5", "⏱️ x2", "🎁 Бонуси", "💰 Сума овертаймів"],
+  };
+}
+
+  // overall (як було раніше)
+  return {
+    startDay: 1, endDay: dim,
+    showCalendar: true,
+    headers: ["💰 Ставка", "⏱️ x1", "⏱️ x1.5", "⏱️ x2", "🎁 Бонуси", "🚫 Пропущені години", "💰 Сума овертаймів", "💵 Загальна підрахована сума за місяць"],
+  };
+}
+
+// ===== hour rate (Пн–Пт) =====
+function countWeekdays(year, month) {
+  const dim = daysInMonth(year, month);
+  let count = 0;
+  for (let d = 1; d <= dim; d++) {
+    const jsDate = new Date(year, month - 1, d);
+    const dow = jsDate.getDay(); // 0=Нд,6=Сб
+    if (dow !== 0 && dow !== 6) count++;
+  }
+  return count;
+}
+function calcHourRate(baseSalary, year, month) {
+  const salary = Number(baseSalary ?? 0);
+  const workDays = countWeekdays(year, month);
+  const totalHours = workDays * 8;
+  if (!totalHours) return 0;
+  return salary / totalHours;
+}
+
 // ===== CREATE TABLE HEAD =====
-function createTableHead(year, month, daysInMonth) {
+function createTableHead(year, month, startDay, endDay, showCalendar, extraHeaders) {
   crmHead.innerHTML = '';
 
   const weekDays = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
   const headRow = document.createElement('tr');
+
   const thName = document.createElement('th');
   thName.textContent = "👤 Ім'я";
   headRow.appendChild(thName);
 
-  for (let d = 1; d <= daysInMonth; d++) {
-    const date = new Date(year, month - 1, d);
-    const dayOfWeek = weekDays[date.getDay()];
-    const th = document.createElement('th');
-    th.innerHTML = `<div class="day-number">${d}</div><div class="day-name">${dayOfWeek}</div>`;
-    th.classList.add('date-col');
-    if (dayOfWeek === 'Сб' || dayOfWeek === 'Нд') th.classList.add('weekend');
-    headRow.appendChild(th);
+  if (showCalendar) {
+    for (let d = startDay; d <= endDay; d++) {
+      const date = new Date(year, month - 1, d);
+      const dayOfWeek = weekDays[date.getDay()];
+      const th = document.createElement('th');
+      th.innerHTML = `<div class="day-number">${d}</div><div class="day-name">${dayOfWeek}</div>`;
+      th.classList.add('date-col');
+      if (dayOfWeek === 'Сб' || dayOfWeek === 'Нд') th.classList.add('weekend');
+      headRow.appendChild(th);
+    }
   }
-
-  const extraHeaders = [
-    "💰 Ставка",
-    "⏱️ x1",
-    "⏱️ x1.5",
-    "⏱️ x2",
-    "🎁 Бонуси",
-    "🚫 Пропущені години",
-    "💰 Сума овертаймів",
-    "💵 Загальна підрахована сума"
-  ];
 
   extraHeaders.forEach(label => {
     const th = document.createElement('th');
@@ -140,6 +218,7 @@ async function loadCRMData() {
   if (!depId || !year || !month) return;
 
   crmBody.innerHTML = '⏳ Завантаження...';
+
   const data = await getJson(`${API_BASE_URL}/crm/department?departmentId=${depId}&year=${year}&month=${month}`);
 
   data.sort((a, b) => {
@@ -147,8 +226,8 @@ async function loadCRMData() {
     return last === 0 ? a.firstName.localeCompare(b.firstName, 'uk') : last;
   });
 
-  const daysInMonth = new Date(year, month, 0).getDate();
-  createTableHead(year, month, daysInMonth);
+  const meta = getModeMeta(year, month);
+  createTableHead(year, month, meta.startDay, meta.endDay, meta.showCalendar, meta.headers);
 
   crmBody.innerHTML = '';
 
@@ -165,56 +244,68 @@ async function loadCRMData() {
     `;
     tr.appendChild(nameTd);
 
-    // === дні місяця ===
+    // maps for calendar
     const overtimeMap = {};
     const missingMap = {};
 
-    (user.overtimesDay || []).forEach(o => {
-      overtimeMap[o.overTimeDateRegistration] = o;
-    });
-    (user.missingsDay || []).forEach(m => {
-      missingMap[m.date] = m;
-    });
+    (user.overtimesDay || []).forEach(o => { overtimeMap[o.overTimeDateRegistration] = o; });
+    (user.missingsDay || []).forEach(m => { missingMap[m.date] = m; });
 
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      const cell = document.createElement('td');
-      const over = overtimeMap[dateStr];
-      const miss = missingMap[dateStr];
+    // === calendar cells (only if needed) ===
+    if (meta.showCalendar) {
+      for (let d = meta.startDay; d <= meta.endDay; d++) {
+        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const cell = document.createElement('td');
 
-      const jsDate = new Date(year, month - 1, d);
-      const dayOfWeek = jsDate.getDay(); // 0 = Нд, 6 = Сб
-      if (dayOfWeek === 0 || dayOfWeek === 6) {
-        cell.classList.add('weekend');
+        const over = overtimeMap[dateStr];
+        const miss = missingMap[dateStr];
+
+        const jsDate = new Date(year, month - 1, d);
+        const dow = jsDate.getDay();
+        if (dow === 0 || dow === 6) cell.classList.add('weekend');
+
+        if (over) {
+          cell.classList.add('overtime');
+          cell.innerHTML = `<div class="cell-top">${over.overtimeHours} год</div>`;
+          cell.addEventListener('click', () =>
+            openModal('Overtime', `
+              ${over.description}<br>
+              <b>Години:</b> ${over.overtimeHours}<br>
+              <b>Коеф:</b> x${over.multiplier}<br>
+            `)
+          );
+        } else if (miss) {
+          cell.classList.add('missing');
+          cell.innerHTML = `<div class="cell-top">${miss.missingHours} год</div>`;
+          cell.addEventListener('click', () =>
+            openModal('Пропуск', `
+              ${miss.reason}<br>
+              <b>Пропущено годин:</b> ${miss.missingHours}<br>
+            `)
+          );
+        }
+
+        tr.appendChild(cell);
       }
-
-      if (over) {
-        cell.classList.add('overtime');
-        cell.innerHTML = `<div class="cell-top">${over.overtimeHours} год</div>`;
-        cell.addEventListener('click', () =>
-          openModal('Overtime', `
-            ${over.description}<br>
-            <b>Години:</b> ${over.overtimeHours}<br>
-            <b>Коеф:</b> x${over.multiplier}<br>
-          `)
-        );
-      } else if (miss) {
-        cell.classList.add('missing');
-        cell.innerHTML = `<div class="cell-top">${miss.missingHours} год</div>`;
-        cell.addEventListener('click', () =>
-          openModal('Пропуск', `
-            ${miss.reason}<br>
-            <b>Пропущено годин:</b> ${miss.missingHours}<br>
-          `)
-        );
-      }
-
-      tr.appendChild(cell);
     }
 
-    // === Salary cell ===
+    // ===== common helpers =====
+    function createDoubleCell(hours, amount, isDeduction = false) {
+      const td = document.createElement('td');
+      td.innerHTML = `
+        <div class="cell-top">${hours || 0} год</div>
+        <div class="cell-bottom" style="color:${isDeduction ? '#b71c1c' : '#155724'};">
+          ${isDeduction ? '−' : '+'}${Number(amount || 0).toFixed(2)} грн
+        </div>
+      `;
+      return td;
+    }
+
+    // ===== cells per mode =====
+    const baseSalary = Number(user.baseSalary ?? 0);
+
+    // Salary cell (always exists)
     const salaryTd = document.createElement('td');
-    salaryTd.textContent = (user.baseSalary ?? 0).toFixed(2);
     salaryTd.classList.add('salary-cell');
     salaryTd.dataset.id = user.userId;
     salaryTd.addEventListener('click', () => {
@@ -223,67 +314,130 @@ async function loadCRMData() {
       salaryModal.classList.remove('hidden');
     });
 
-    // === дані по коефіцієнтах ===
-    const x1 = sumByMultiplier(user.overtimesDay, 1);
-    const x15 = sumByMultiplier(user.overtimesDay, 1.5);
-    const x2 = sumByMultiplier(user.overtimesDay, 2);
-    const missing = (user.missingsDay || []).reduce((a, m) => a + (m.missingHours || 0), 0);
+    // ===== MODE: first/second =====
+    if (crmPeriodMode === 'first' || crmPeriodMode === 'second') {
+      const hourRate = calcHourRate(user.baseSalary, year, month);
 
-    const sumX1 = user.overtimeX1 ?? 0;
-    const sumX15 = user.overtimeX1_5 ?? 0;
-    const sumX2 = user.overtimeX2 ?? 0;
-    const sumMissing = user.totalDeductions ?? 0;
+      const missingsInPeriod = (user.missingsDay || []).filter(m =>
+        inRangeByDay(m.date, meta.startDay, meta.endDay)
+      );
 
-    function createDoubleCell(hours, amount, isDeduction = false) {
-      const td = document.createElement('td');
-      td.innerHTML = `
-        <div class="cell-top">${hours || 0} год</div>
-        <div class="cell-bottom" style="color:${isDeduction ? '#b71c1c' : '#155724'};">
-          ${isDeduction ? '−' : '+'}${amount.toFixed(2)} грн
-        </div>
-      `;
-      return td;
+      const missingHours = missingsInPeriod.reduce((a, m) => a + (m.missingHours || 0), 0);
+      const sumMissing = missingHours * hourRate;
+
+      const basePart = baseSalary / 2;
+
+      salaryTd.textContent = basePart.toFixed(2);
+
+      const missingTd = createDoubleCell(missingHours, sumMissing, true);
+
+      const totalTd = document.createElement('td');
+      totalTd.textContent = (basePart - sumMissing).toFixed(2);
+
+      tr.appendChild(salaryTd);
+      tr.appendChild(missingTd);
+      tr.appendChild(totalTd);
+
+      crmBody.appendChild(tr);
+      return;
     }
 
-    const x1Td = createDoubleCell(x1, sumX1);
-    const x15Td = createDoubleCell(x15, sumX15);
-    const x2Td = createDoubleCell(x2, sumX2);
-    const missingTd = createDoubleCell(missing, sumMissing, true);
+    // ===== MODE: payroll (bonus + overtime, NO missing, NO calendar) =====
+    if (crmPeriodMode === 'payroll') {
+      const hourRate = calcHourRate(user.baseSalary, year, month);
 
-    // === Сума овертаймів (на фронті) ===
-    const overtimeTotalAmount = sumX1 + sumX15 + sumX2;
-    const overtimeTotalTd = document.createElement('td');
-    overtimeTotalTd.textContent = overtimeTotalAmount.toFixed(2);
+      const overtimes = (user.overtimesDay || []);
 
-    // === Загальна підрахована сума (з бекенду) ===
-    const baseTotal = Number(user.totalSum ?? 0);
-    const totalTd = document.createElement('td');
-    totalTd.textContent = baseTotal.toFixed(2);
+      const x1Hours = sumByMultiplier(overtimes, 1);
+      const x15Hours = sumByMultiplier(overtimes, 1.5);
+      const x2Hours = sumByMultiplier(overtimes, 2);
 
-    // === КОЛОНКА "Бонуси" (відкриває модалку з усіма бонусами) ===
-    const bonusTd = document.createElement('td');
-    bonusTd.classList.add('bonus-cell');
-    const bonusValue = Number(user.bonusTotalSum ?? 0);
-    bonusTd.textContent = bonusValue.toFixed(2);
+      const sumX1 = sumAmountByMultiplier(overtimes, 1, hourRate);
+      const sumX15 = sumAmountByMultiplier(overtimes, 1.5, hourRate);
+      const sumX2 = sumAmountByMultiplier(overtimes, 2, hourRate);
 
-    bonusTd.addEventListener('click', () => {
-      openBonusModal(user.userId, year, month);
-    });
+      const overtimeTotalAmount = sumX1 + sumX15 + sumX2;
 
-    // === додаємо комірки у правильному порядку ===
-    tr.appendChild(salaryTd);
-    tr.appendChild(x1Td);
-    tr.appendChild(x15Td);
-    tr.appendChild(x2Td);
-    tr.appendChild(bonusTd);
-    tr.appendChild(missingTd);
-    tr.appendChild(overtimeTotalTd);
-    tr.appendChild(totalTd);
+      const bonusValue = Number(user.bonusTotalSum ?? 0);
 
-    crmBody.appendChild(tr);
+      salaryTd.textContent = baseSalary.toFixed(2);
+
+      const x1Td = createDoubleCell(x1Hours, sumX1);
+      const x15Td = createDoubleCell(x15Hours, sumX15);
+      const x2Td = createDoubleCell(x2Hours, sumX2);
+
+      const bonusTd = document.createElement('td');
+      bonusTd.classList.add('bonus-cell');
+      bonusTd.textContent = bonusValue.toFixed(2);
+      bonusTd.addEventListener('click', () => openBonusModal(user.userId, year, month));
+
+      const overtimeTotalTd = document.createElement('td');
+      overtimeTotalTd.textContent = overtimeTotalAmount.toFixed(2);
+
+      const totalTd = document.createElement('td');
+      totalTd.textContent = (baseSalary + overtimeTotalAmount + bonusValue).toFixed(2);
+
+      tr.appendChild(salaryTd);
+tr.appendChild(x1Td);
+tr.appendChild(x15Td);
+tr.appendChild(x2Td);
+tr.appendChild(bonusTd);
+tr.appendChild(overtimeTotalTd);
+
+crmBody.appendChild(tr);
+return;
+    }
+
+    // ===== MODE: overall (як було в початковому коді: бекові суми) =====
+    {
+      // години (з фронта)
+      const x1Hours = sumByMultiplier(user.overtimesDay, 1);
+      const x15Hours = sumByMultiplier(user.overtimesDay, 1.5);
+      const x2Hours = sumByMultiplier(user.overtimesDay, 2);
+      const missingHours = (user.missingsDay || []).reduce((a, m) => a + (m.missingHours || 0), 0);
+
+      // суми (з бекенду, як було)
+      const sumX1 = user.overtimeX1 ?? 0;
+      const sumX15 = user.overtimeX1_5 ?? 0;
+      const sumX2 = user.overtimeX2 ?? 0;
+      const sumMissing = user.totalDeductions ?? 0;
+
+      salaryTd.textContent = baseSalary.toFixed(2);
+
+      const x1Td = createDoubleCell(x1Hours, sumX1);
+      const x15Td = createDoubleCell(x15Hours, sumX15);
+      const x2Td = createDoubleCell(x2Hours, sumX2);
+
+      const bonusTd = document.createElement('td');
+      bonusTd.classList.add('bonus-cell');
+      const bonusValue = Number(user.bonusTotalSum ?? 0);
+      bonusTd.textContent = bonusValue.toFixed(2);
+      bonusTd.addEventListener('click', () => openBonusModal(user.userId, year, month));
+
+      const missingTd = createDoubleCell(missingHours, sumMissing, true);
+
+      const overtimeTotalAmount = sumX1 + sumX15 + sumX2;
+      const overtimeTotalTd = document.createElement('td');
+      overtimeTotalTd.textContent = overtimeTotalAmount.toFixed(2);
+
+      const totalTd = document.createElement('td');
+      const baseTotal = Number(user.totalSum ?? 0);
+      totalTd.textContent = baseTotal.toFixed(2);
+
+      tr.appendChild(salaryTd);
+      tr.appendChild(x1Td);
+      tr.appendChild(x15Td);
+      tr.appendChild(x2Td);
+      tr.appendChild(bonusTd);
+      tr.appendChild(missingTd);
+      tr.appendChild(overtimeTotalTd);
+      tr.appendChild(totalTd);
+
+      crmBody.appendChild(tr);
+    }
   });
 
-  // === focus handling ===
+  // focus handling
   document.querySelectorAll('.user-focus').forEach(chk => {
     chk.addEventListener('change', () => {
       const anyChecked = Array.from(document.querySelectorAll('.user-focus')).some(c => c.checked);
@@ -296,7 +450,13 @@ async function loadCRMData() {
 }
 
 function sumByMultiplier(list, mult) {
-  return list ? list.filter(o => o.multiplier == mult).reduce((acc, o) => acc + o.overtimeHours, 0) : 0;
+  return list ? list.filter(o => o.multiplier == mult).reduce((acc, o) => acc + (o.overtimeHours || 0), 0) : 0;
+}
+function sumAmountByMultiplier(list, mult, hourRate) {
+  if (!list) return 0;
+  return list
+    .filter(o => o.multiplier == mult)
+    .reduce((acc, o) => acc + ((o.overtimeHours || 0) * hourRate * mult), 0);
 }
 
 // ===== MODALS =====
@@ -308,7 +468,7 @@ function openModal(title, content) {
 closeModal.onclick = () => modal.classList.add('hidden');
 closeSalaryModal.onclick = () => salaryModal.classList.add('hidden');
 
-// ===== Збереження ЗП + reload із фільтрами =====
+// ===== Збереження ЗП + reload =====
 saveSalaryBtn.onclick = async () => {
   if (!id) return;
   const salary = parseFloat(newSalary.value);
@@ -329,7 +489,7 @@ saveSalaryBtn.onclick = async () => {
   }
 };
 
-// ===== ЛОГІКА БОНУСІВ =====
+// ===== ЛОГІКА БОНУСІВ (без змін) =====
 function resetBonusForm() {
   bonusDateInput.value = '';
   bonusReasonInput.value = '';
@@ -381,7 +541,6 @@ function renderBonusList(bonuses) {
     bonusTableBody.appendChild(tr);
   });
 
-  // edit
   document.querySelectorAll('.bonus-edit-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const bonusId = btn.dataset.id;
@@ -389,13 +548,12 @@ function renderBonusList(bonuses) {
       if (!bonus) return;
 
       editingBonusId = bonus.id;
-      bonusDateInput.value = bonus.date;      // LocalDate string yyyy-MM-dd
+      bonusDateInput.value = bonus.date;
       bonusReasonInput.value = bonus.reason;
       bonusSumInput.value = bonus.sum;
     });
   });
 
-  // delete
   document.querySelectorAll('.bonus-delete-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const bonusId = btn.dataset.id;
@@ -404,10 +562,7 @@ function renderBonusList(bonuses) {
       try {
         const resp = await fetch(
           `${API_BASE_URL}/bonus/delete?userId=${currentBonusUserId}&bonusId=${bonusId}`,
-          {
-            method: 'DELETE',
-            headers: { Authorization: 'Bearer ' + token }
-          }
+          { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } }
         );
 
         if (resp.status === 204 || resp.ok) {
@@ -424,7 +579,6 @@ function renderBonusList(bonuses) {
 }
 
 async function reloadBonusesAndCrm() {
-  // оновлюємо список бонусів в модалці
   try {
     const bonuses = await getJson(
       `${API_BASE_URL}/bonus/getBy/month?userId=${currentBonusUserId}&year=${currentBonusYear}&month=${currentBonusMonth}`
@@ -434,7 +588,6 @@ async function reloadBonusesAndCrm() {
     console.error(e);
   }
 
-  // оновлюємо CRM-таблицю (щоб підтягнути новий bonusTotalSum та totalSum)
   await loadCRMData();
 }
 
@@ -453,38 +606,18 @@ saveBonusBtn.onclick = async () => {
 
   try {
     if (editingBonusId == null) {
-      // створення бонусу
-      const body = {
-        date: date,
-        reason: reason,
-        sum: sumVal
-      };
+      const body = { date: date, reason: reason, sum: sumVal };
 
-      const ok = await postJson(
-        `${API_BASE_URL}/bonus/add?userId=${currentBonusUserId}`,
-        body
-      );
-
-      if (!ok) {
-        alert('❌ Помилка при створенні бонусу');
-        return;
-      }
+      const ok = await postJson(`${API_BASE_URL}/bonus/add?userId=${currentBonusUserId}`, body);
+      if (!ok) return alert('❌ Помилка при створенні бонусу');
     } else {
-      // оновлення бонусу
-      const body = {
-        reason: reason,
-        bonusSum: sumVal
-      };
+      const body = { reason: reason, bonusSum: sumVal };
 
       const ok = await postJson(
         `${API_BASE_URL}/bonus/update?userId=${currentBonusUserId}&bonusId=${editingBonusId}`,
         body
       );
-
-      if (!ok) {
-        alert('❌ Помилка при оновленні бонусу');
-        return;
-      }
+      if (!ok) return alert('❌ Помилка при оновленні бонусу');
     }
 
     resetBonusForm();
@@ -503,6 +636,7 @@ closeBonusModal.onclick = () => {
 
 // ===== SWITCH VIEW =====
 viewModeSelect.addEventListener('change', e => {
+  togglePeriodSwitchVisibility();
   if (e.target.value === 'calendar') window.location.href = '/html/admin/admin_viewList.html';
 });
 
@@ -510,6 +644,21 @@ const homeBtn = document.getElementById('homeBtn');
 if (homeBtn) {
   homeBtn.addEventListener('click', () => {
     window.location.href = '/html/admin/admin_dashboard_ui.html';
+  });
+}
+
+// ===== Period buttons =====
+if (periodButtons.length) {
+  setActivePeriodButton();
+  togglePeriodSwitchVisibility();
+
+  periodButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      crmPeriodMode = btn.dataset.period;
+      localStorage.setItem(PERIOD_STORAGE_KEY, crmPeriodMode);
+      setActivePeriodButton();
+      loadCRMData();
+    });
   });
 }
 
@@ -534,7 +683,6 @@ loadDepartments().then(() => {
   }
 });
 
-// оновлення при зміні будь-якого фільтру
 [departmentSelect, yearSelect, monthSelect].forEach(el =>
   el.addEventListener('change', loadCRMData)
 );
