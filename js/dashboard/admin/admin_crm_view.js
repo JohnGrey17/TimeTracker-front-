@@ -1,4 +1,3 @@
-// /js/dashboard/admin/admin_crm_view.js
 
 const API_BASE_URL = "/api";
 
