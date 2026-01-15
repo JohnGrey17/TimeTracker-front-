@@ -1,6 +1,6 @@
 // /js/dashboard/admin/admin_crm_view.js
 
-const API_BASE_URL = "http://localhost:8080/api";
+const API_BASE_URL = "/api";
 
 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 if (!token) {
