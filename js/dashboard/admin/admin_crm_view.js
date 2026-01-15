@@ -1,3 +1,5 @@
+// /js/dashboard/admin/admin_crm_view.js
+
 const API_BASE_URL = "http://localhost:8080/api";
 
 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -62,10 +64,14 @@ function togglePeriodSwitchVisibility() {
 // ===== Helpers =====
 async function getJson(url) {
   const res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
-  if (!res.ok) throw new Error('❌ Request failed');
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(t || `HTTP ${res.status}`);
+  }
   return res.json();
 }
 
+// ✅ FIX: показуємо текст помилки з беку
 async function postJson(url, body) {
   const res = await fetch(url, {
     method: 'POST',
@@ -75,7 +81,12 @@ async function postJson(url, body) {
     },
     body: JSON.stringify(body),
   });
-  return res.ok;
+
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(t || `HTTP ${res.status}`);
+  }
+  return true;
 }
 
 // ===== INIT YEAR / MONTH =====
@@ -114,7 +125,6 @@ function daysInMonth(year, month) {
   return new Date(year, month, 0).getDate();
 }
 
-// yyyy-mm-dd -> day
 function getDayFromDateStr(dateStr) {
   const parts = String(dateStr).split('-');
   return parseInt(parts[2], 10);
@@ -131,7 +141,7 @@ function getModeMeta(year, month) {
     return {
       startDay: 1, endDay: 15,
       showCalendar: true,
-      headers: ["💰 Ставка", "🚫 Пропущені години", "💵 Сумма до сплати"],
+      headers: ["💰 Половина Ставки", "🚫 Пропущені години", "💵 Сумма до сплати"],
     };
   }
 
@@ -139,43 +149,23 @@ function getModeMeta(year, month) {
     return {
       startDay: 16, endDay: dim,
       showCalendar: true,
-      headers: ["💰 Ставка", "🚫 Пропущені години", "💵 Сумма до сплати"],
+      headers: ["💰 Половина Ставки", "🚫 Пропущені години", "💵 Сумма до сплати"],
     };
   }
 
- if (crmPeriodMode === 'payroll') {
-  return {
-    startDay: 1, endDay: dim,
-    showCalendar: false,
-    headers: ["💰 Ставка", "⏱️ x1", "⏱️ x1.5", "⏱️ x2", "🎁 Бонуси", "💰 Сума овертаймів"],
-  };
-}
+  if (crmPeriodMode === 'payroll') {
+    return {
+      startDay: 1, endDay: dim,
+      showCalendar: false,
+      headers: ["💰 Ставка", "⏱️ x1", "⏱️ x1.5", "⏱️ x2", "🎁 Бонуси", "💰 Сума овертаймів"],
+    };
+  }
 
-  // overall (як було раніше)
   return {
     startDay: 1, endDay: dim,
     showCalendar: true,
     headers: ["💰 Ставка", "⏱️ x1", "⏱️ x1.5", "⏱️ x2", "🎁 Бонуси", "🚫 Пропущені години", "💰 Сума овертаймів", "💵 Загальна підрахована сума за місяць"],
   };
-}
-
-// ===== hour rate (Пн–Пт) =====
-function countWeekdays(year, month) {
-  const dim = daysInMonth(year, month);
-  let count = 0;
-  for (let d = 1; d <= dim; d++) {
-    const jsDate = new Date(year, month - 1, d);
-    const dow = jsDate.getDay(); // 0=Нд,6=Сб
-    if (dow !== 0 && dow !== 6) count++;
-  }
-  return count;
-}
-function calcHourRate(baseSalary, year, month) {
-  const salary = Number(baseSalary ?? 0);
-  const workDays = countWeekdays(year, month);
-  const totalHours = workDays * 8;
-  if (!totalHours) return 0;
-  return salary / totalHours;
 }
 
 // ===== CREATE TABLE HEAD =====
@@ -234,7 +224,6 @@ async function loadCRMData() {
   data.forEach(user => {
     const tr = document.createElement('tr');
 
-    // === Name + checkbox ===
     const nameTd = document.createElement('td');
     nameTd.innerHTML = `
       <label>
@@ -244,15 +233,14 @@ async function loadCRMData() {
     `;
     tr.appendChild(nameTd);
 
-    // maps for calendar
     const overtimeMap = {};
     const missingMap = {};
 
     (user.overtimesDay || []).forEach(o => { overtimeMap[o.overTimeDateRegistration] = o; });
     (user.missingsDay || []).forEach(m => { missingMap[m.date] = m; });
 
-    // === calendar cells (only if needed) ===
     if (meta.showCalendar) {
+      const weekDays = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
       for (let d = meta.startDay; d <= meta.endDay; d++) {
         const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const cell = document.createElement('td');
@@ -289,7 +277,6 @@ async function loadCRMData() {
       }
     }
 
-    // ===== common helpers =====
     function createDoubleCell(hours, amount, isDeduction = false) {
       const td = document.createElement('td');
       td.innerHTML = `
@@ -301,10 +288,8 @@ async function loadCRMData() {
       return td;
     }
 
-    // ===== cells per mode =====
     const baseSalary = Number(user.baseSalary ?? 0);
 
-    // Salary cell (always exists)
     const salaryTd = document.createElement('td');
     salaryTd.classList.add('salary-cell');
     salaryTd.dataset.id = user.userId;
@@ -314,23 +299,34 @@ async function loadCRMData() {
       salaryModal.classList.remove('hidden');
     });
 
-    // ===== MODE: first/second =====
+    // first/second
     if (crmPeriodMode === 'first' || crmPeriodMode === 'second') {
-      const hourRate = calcHourRate(user.baseSalary, year, month);
+      // залишив як у тебе (без змін по бонусах)
+      const basePart = baseSalary / 2;
 
       const missingsInPeriod = (user.missingsDay || []).filter(m =>
         inRangeByDay(m.date, meta.startDay, meta.endDay)
       );
-
       const missingHours = missingsInPeriod.reduce((a, m) => a + (m.missingHours || 0), 0);
-      const sumMissing = missingHours * hourRate;
 
-      const basePart = baseSalary / 2;
+      // твоя стара логіка тут була — залишаю як є (бо це не про бонуси)
+      const hourRate = (() => {
+        const dim = daysInMonth(year, month);
+        let workDays = 0;
+        for (let d = 1; d <= dim; d++) {
+          const jsDate = new Date(year, month - 1, d);
+          const dow = jsDate.getDay();
+          if (dow !== 0 && dow !== 6) workDays++;
+        }
+        const totalHours = workDays * 8;
+        return totalHours ? (baseSalary / totalHours) : 0;
+      })();
+
+      const sumMissing = missingHours * hourRate;
 
       salaryTd.textContent = basePart.toFixed(2);
 
       const missingTd = createDoubleCell(missingHours, sumMissing, true);
-
       const totalTd = document.createElement('td');
       totalTd.textContent = (basePart - sumMissing).toFixed(2);
 
@@ -342,29 +338,26 @@ async function loadCRMData() {
       return;
     }
 
-    // ===== MODE: payroll (bonus + overtime, NO missing, NO calendar) =====
+    // payroll (суми з беку)
     if (crmPeriodMode === 'payroll') {
-      const hourRate = calcHourRate(user.baseSalary, year, month);
-
       const overtimes = (user.overtimesDay || []);
 
       const x1Hours = sumByMultiplier(overtimes, 1);
       const x15Hours = sumByMultiplier(overtimes, 1.5);
       const x2Hours = sumByMultiplier(overtimes, 2);
 
-      const sumX1 = sumAmountByMultiplier(overtimes, 1, hourRate);
-      const sumX15 = sumAmountByMultiplier(overtimes, 1.5, hourRate);
-      const sumX2 = sumAmountByMultiplier(overtimes, 2, hourRate);
+      const sumX1  = Number(user.overtimeX1 ?? 0);
+      const sumX15 = Number(user.overtimeX1_5 ?? 0);
+      const sumX2  = Number(user.overtimeX2 ?? 0);
 
       const overtimeTotalAmount = sumX1 + sumX15 + sumX2;
-
       const bonusValue = Number(user.bonusTotalSum ?? 0);
 
       salaryTd.textContent = baseSalary.toFixed(2);
 
-      const x1Td = createDoubleCell(x1Hours, sumX1);
+      const x1Td  = createDoubleCell(x1Hours, sumX1);
       const x15Td = createDoubleCell(x15Hours, sumX15);
-      const x2Td = createDoubleCell(x2Hours, sumX2);
+      const x2Td  = createDoubleCell(x2Hours, sumX2);
 
       const bonusTd = document.createElement('td');
       bonusTd.classList.add('bonus-cell');
@@ -374,33 +367,28 @@ async function loadCRMData() {
       const overtimeTotalTd = document.createElement('td');
       overtimeTotalTd.textContent = overtimeTotalAmount.toFixed(2);
 
-      const totalTd = document.createElement('td');
-      totalTd.textContent = (baseSalary + overtimeTotalAmount + bonusValue).toFixed(2);
-
       tr.appendChild(salaryTd);
-tr.appendChild(x1Td);
-tr.appendChild(x15Td);
-tr.appendChild(x2Td);
-tr.appendChild(bonusTd);
-tr.appendChild(overtimeTotalTd);
+      tr.appendChild(x1Td);
+      tr.appendChild(x15Td);
+      tr.appendChild(x2Td);
+      tr.appendChild(bonusTd);
+      tr.appendChild(overtimeTotalTd);
 
-crmBody.appendChild(tr);
-return;
+      crmBody.appendChild(tr);
+      return;
     }
 
-    // ===== MODE: overall (як було в початковому коді: бекові суми) =====
+    // overall
     {
-      // години (з фронта)
       const x1Hours = sumByMultiplier(user.overtimesDay, 1);
       const x15Hours = sumByMultiplier(user.overtimesDay, 1.5);
       const x2Hours = sumByMultiplier(user.overtimesDay, 2);
       const missingHours = (user.missingsDay || []).reduce((a, m) => a + (m.missingHours || 0), 0);
 
-      // суми (з бекенду, як було)
-      const sumX1 = user.overtimeX1 ?? 0;
-      const sumX15 = user.overtimeX1_5 ?? 0;
-      const sumX2 = user.overtimeX2 ?? 0;
-      const sumMissing = user.totalDeductions ?? 0;
+      const sumX1 = Number(user.overtimeX1 ?? 0);
+      const sumX15 = Number(user.overtimeX1_5 ?? 0);
+      const sumX2 = Number(user.overtimeX2 ?? 0);
+      const sumMissing = Number(user.totalDeductions ?? 0);
 
       salaryTd.textContent = baseSalary.toFixed(2);
 
@@ -452,12 +440,6 @@ return;
 function sumByMultiplier(list, mult) {
   return list ? list.filter(o => o.multiplier == mult).reduce((acc, o) => acc + (o.overtimeHours || 0), 0) : 0;
 }
-function sumAmountByMultiplier(list, mult, hourRate) {
-  if (!list) return 0;
-  return list
-    .filter(o => o.multiplier == mult)
-    .reduce((acc, o) => acc + ((o.overtimeHours || 0) * hourRate * mult), 0);
-}
 
 // ===== MODALS =====
 function openModal(title, content) {
@@ -475,21 +457,22 @@ saveSalaryBtn.onclick = async () => {
   if (isNaN(salary) || salary < 0) return alert('❌ Введіть коректну суму!');
 
   const body = { userId: id, salary: salary };
-  const ok = await postJson(`${API_BASE_URL}/users/sal`, body);
 
-  if (ok) {
+  try {
+    await postJson(`${API_BASE_URL}/users/sal`, body);
+
     localStorage.setItem('selectedDepartment', departmentSelect.value);
     localStorage.setItem('selectedYear', yearSelect.value);
     localStorage.setItem('selectedMonth', monthSelect.value);
 
     alert('✅ Зарплату оновлено!');
     window.location.reload();
-  } else {
-    alert('❌ Помилка при оновленні зарплати!');
+  } catch (e) {
+    alert('❌ Помилка при оновленні зарплати: ' + e.message);
   }
 };
 
-// ===== ЛОГІКА БОНУСІВ (без змін) =====
+// ===== ЛОГІКА БОНУСІВ =====
 function resetBonusForm() {
   bonusDateInput.value = '';
   bonusReasonInput.value = '';
@@ -515,7 +498,7 @@ async function openBonusModal(userId, year, month) {
     renderBonusList(bonuses);
   } catch (e) {
     console.error(e);
-    bonusTableBody.innerHTML = `<tr><td colspan="4">❌ Помилка завантаження бонусів</td></tr>`;
+    bonusTableBody.innerHTML = `<tr><td colspan="4">❌ Помилка: ${e.message}</td></tr>`;
   }
 }
 
@@ -568,11 +551,12 @@ function renderBonusList(bonuses) {
         if (resp.status === 204 || resp.ok) {
           await reloadBonusesAndCrm();
         } else {
-          alert('❌ Помилка при видаленні бонусу');
+          const t = await resp.text().catch(() => "");
+          alert('❌ Помилка при видаленні бонусу: ' + (t || resp.status));
         }
       } catch (e) {
         console.error(e);
-        alert('❌ Помилка при видаленні бонусу');
+        alert('❌ Помилка при видаленні бонусу: ' + e.message);
       }
     });
   });
@@ -587,7 +571,6 @@ async function reloadBonusesAndCrm() {
   } catch (e) {
     console.error(e);
   }
-
   await loadCRMData();
 }
 
@@ -606,25 +589,23 @@ saveBonusBtn.onclick = async () => {
 
   try {
     if (editingBonusId == null) {
+      // create
       const body = { date: date, reason: reason, sum: sumVal };
-
-      const ok = await postJson(`${API_BASE_URL}/bonus/add?userId=${currentBonusUserId}`, body);
-      if (!ok) return alert('❌ Помилка при створенні бонусу');
+      await postJson(`${API_BASE_URL}/bonus/add?userId=${currentBonusUserId}`, body);
     } else {
-      const body = { reason: reason, bonusSum: sumVal };
-
-      const ok = await postJson(
+      // ✅ FIX: update теж шле {date, reason, sum}
+      const body = { date: date, reason: reason, sum: sumVal };
+      await postJson(
         `${API_BASE_URL}/bonus/update?userId=${currentBonusUserId}&bonusId=${editingBonusId}`,
         body
       );
-      if (!ok) return alert('❌ Помилка при оновленні бонусу');
     }
 
     resetBonusForm();
     await reloadBonusesAndCrm();
   } catch (e) {
     console.error(e);
-    alert('❌ Сталася помилка при збереженні бонусу');
+    alert('❌ Сталася помилка: ' + e.message);
   }
 };
 

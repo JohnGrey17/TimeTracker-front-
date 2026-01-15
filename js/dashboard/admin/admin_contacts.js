@@ -267,7 +267,7 @@ async function loadConditionsList() {
 
       card.innerHTML = `
         <div class="condition-row">
-          <span class="pill green">FIXED_PER_HOUR</span>
+          <span class="pill green">FIXED_PER_OVERTIME</span>
           <span class="pill">id: ${c.id}</span>
           <span class="pill blue">ставка: ${amount} грн/год</span>
           <span class="pill">priority: ${pr}</span>
@@ -320,7 +320,7 @@ function buildConditionPayload() {
   if (isNaN(priority)) throw new Error("Priority має бути числом");
 
   return {
-    type: "FIXED_PER_HOUR",
+    type: "FIXED_PER_OVERTIME",
     amount,
     priority,
     active: !!condActive.checked

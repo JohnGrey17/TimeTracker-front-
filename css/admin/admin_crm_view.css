@@ -82,14 +82,11 @@ tr:nth-child(even) {
 }
 
 /* ===== ВИХІДНІ ДНІ ===== */
-/* хедер вихідних */
 th.weekend {
   background: #f0f0f0;
   color: #a00;
   font-weight: bold;
 }
-
-/* клітинки вихідних без овертайму/пропуску */
 td.weekend:not(.overtime):not(.missing) {
   background: #f0f0f0;
   color: #a00;
@@ -110,7 +107,6 @@ td.weekend:not(.overtime):not(.missing) {
   padding: 4px 6px;
 }
 
-/* інпут бонусів (якщо колись захочеш вбудувати в клітинку) */
 .bonus-input {
   min-width: 40px;
   padding: 2px 3px;
@@ -142,7 +138,6 @@ td.weekend:not(.overtime):not(.missing) {
   position: relative;
 }
 
-/* ширша модалка для бонусів */
 #bonusModal .modal-content {
   width: 650px;
   max-width: 95%;
@@ -158,7 +153,6 @@ td.weekend:not(.overtime):not(.missing) {
   cursor: pointer;
 }
 
-/* таблиця в модалці бонусів */
 #bonusTable {
   width: 100%;
   border-collapse: collapse;
@@ -194,18 +188,19 @@ td.weekend:not(.overtime):not(.missing) {
   font-size: 13px;
 }
 
-#saveBonusBtn {
-  background: #b6e7b6;
-}
+#saveBonusBtn { background: #b6e7b6; }
+#resetBonusFormBtn { background: #ffe0a3; }
 
-#resetBonusFormBtn {
-  background: #ffe0a3;
-}
-
-/* HEADER LEFT */
+/* HEADER LEFT/RIGHT */
 .header-left {
   position: absolute;
   left: 20px;
+  top: 15px;
+}
+
+.header-right {
+  position: absolute;
+  right: 20px;
   top: 15px;
 }
 
@@ -236,6 +231,7 @@ tr.dimmed   { opacity: 0.3; }
 
 @media (max-width: 992px) {
   .header-left { position: static; margin-bottom: 10px; }
+  .header-right { position: static; margin-top: 10px; }
   main { padding: 10px; }
   th, td { font-size: 11px; padding: 5px; }
 }
@@ -246,14 +242,8 @@ tr.dimmed   { opacity: 0.3; }
   .modal-content { width: 95%; padding: 15px; }
 }
 
-.header-right {
-  position: absolute;
-  right: 20px;
-  top: 15px;
-}
-
 /* =========================
-   CRM PERIOD SWITCH (NEW)
+   CRM PERIOD SWITCH
    ========================= */
 .period-switch {
   position: absolute;
@@ -276,50 +266,7 @@ tr.dimmed   { opacity: 0.3; }
   transition: 0.15s;
 }
 
-.period-btn:hover {
-  filter: brightness(0.97);
-}
-
-.period-btn.active {
-  background: #8cc7ff;
-}
-
-@media (max-width: 992px) {
-  .period-switch {
-    position: static;
-    width: 100%;
-    margin-top: 10px;
-    justify-content: center;
-    right: auto;
-    top: auto;
-  }
-}
-/* =========================
-   CRM PERIOD SWITCH (NEW)
-   ========================= */
-.period-switch {
-  position: absolute;
-  right: 180px;
-  top: 15px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.period-btn {
-  background: #cce3ff;
-  border: none;
-  border-radius: 20px;
-  padding: 10px 14px;
-  font-size: 14px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.15s;
-}
-
 .period-btn:hover { filter: brightness(0.97); }
-
 .period-btn.active { background: #8cc7ff; }
 
 @media (max-width: 992px) {
