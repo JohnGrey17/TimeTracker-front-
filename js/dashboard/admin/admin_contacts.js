@@ -1,5 +1,5 @@
 // ===== CONFIG =====
-const API_BASE_URL = "/api";
+const API_BASE_URL = "http://localhost:8080/api";
 
 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 if (!token) {
@@ -9,57 +9,52 @@ if (!token) {
 
 // ===== DOM =====
 const departmentSelect = document.getElementById('departmentSelect');
-const searchInput      = document.getElementById('searchInput');
-const contactsList     = document.getElementById('contactsList');
+const subDepartmentSelect = document.getElementById('subDepartmentSelect');
+const searchInput = document.getElementById('searchInput');
+const contactsList = document.getElementById('contactsList');
 
-const userModal        = document.getElementById('userModal');
-const closeUserModal   = document.getElementById('closeUserModal');
-const modalUserName    = document.getElementById('modalUserName');
-const modalUserEmail   = document.getElementById('modalUserEmail');
-const modalUserPhone   = document.getElementById('modalUserPhone');
+const userModal = document.getElementById('userModal');
+const closeUserModal = document.getElementById('closeUserModal');
+const modalUserName = document.getElementById('modalUserName');
+const modalUserEmail = document.getElementById('modalUserEmail');
+const modalUserPhone = document.getElementById('modalUserPhone');
 
-// ✅ Conditions modal
-const conditionsModal        = document.getElementById('conditionsModal');
-const closeConditionsModal   = document.getElementById('closeConditionsModal');
-const conditionsSubtitle     = document.getElementById('conditionsSubtitle');
-const conditionsListWrap     = document.getElementById('conditionsListWrap');
-const refreshConditionsBtn   = document.getElementById('refreshConditionsBtn');
+// CONDITIONS
+const conditionsModal = document.getElementById('conditionsModal');
+const closeConditionsModal = document.getElementById('closeConditionsModal');
+const conditionsSubtitle = document.getElementById('conditionsSubtitle');
+const conditionsListWrap = document.getElementById('conditionsListWrap');
+const editingConditionId = document.getElementById('editingConditionId');
+const conditionFormTitle = document.getElementById('conditionFormTitle');
+const condAmount = document.getElementById('condAmount');
+const condPriority = document.getElementById('condPriority');
+const condActive = document.getElementById('condActive');
+const saveConditionBtn = document.getElementById('saveConditionBtn');
+const resetConditionBtn = document.getElementById('resetConditionBtn');
 
-const editingConditionId     = document.getElementById('editingConditionId');
-const conditionFormTitle     = document.getElementById('conditionFormTitle');
-const condAmount             = document.getElementById('condAmount');
-const condPriority           = document.getElementById('condPriority');
-const condActive             = document.getElementById('condActive');
-const saveConditionBtn       = document.getElementById('saveConditionBtn');
-const resetConditionBtn      = document.getElementById('resetConditionBtn');
+// CHANGE DEPARTMENT
+const changeDepartmentModal = document.getElementById('changeDepartmentModal');
+const closeChangeDepartmentModal = document.getElementById('closeChangeDepartmentModal');
+const changeDepartmentSelect = document.getElementById('changeDepartmentSelect');
+const saveChangeDepartmentBtn = document.getElementById('saveChangeDepartmentBtn');
 
+// ===== STATE =====
 let allUsers = [];
-
-// для умов
+let currentDepartmentId = null;
+let currentSubDepartmentId = null;
+let userIdForDepartmentChange = null;
 let currentConditionUserId = null;
-let currentConditionUserName = "";
 
-// ===== Helpers =====
-async function safeReadError(res) {
-  try {
-    const contentType = res.headers.get("content-type") || "";
-    if (contentType.includes("application/json")) {
-      const j = await res.json();
-      return j.message || j.error || j.detail || JSON.stringify(j);
-    }
-    return await res.text();
-  } catch (_) {
-    return "";
-  }
-}
-
+// ===== HELPERS =====
 async function getJson(url) {
   try {
-    const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+    const res = await fetch(url, {
+      headers: { Authorization: "Bearer " + token }
+    });
     if (!res.ok) return [];
     return await res.json();
   } catch (e) {
-    console.error("❌ Fetch failed:", e);
+    console.error("Fetch error:", e);
     return [];
   }
 }
@@ -68,139 +63,202 @@ async function requestJson(url, method, body) {
   const res = await fetch(url, {
     method,
     headers: {
-      'Authorization': 'Bearer ' + token,
-      ...(body ? { 'Content-Type': 'application/json' } : {})
+      Authorization: "Bearer " + token,
+      ...(body ? { "Content-Type": "application/json" } : {})
     },
     ...(body ? { body: JSON.stringify(body) } : {})
   });
 
-  if (!res.ok) {
-    const msg = await safeReadError(res);
-    throw new Error(msg || `HTTP ${res.status}`);
-  }
-
-  const ct = res.headers.get("content-type") || "";
-  if (ct.includes("application/json")) return res.json();
-  return null;
+  if (!res.ok) throw new Error("HTTP " + res.status);
 }
 
-// ✅ DELETE user
-async function deleteUserById(userId, btnEl) {
-  const ok = confirm("Ви точно хочете видалити цього користувача?");
-  if (!ok) return;
-
-  try {
-    if (btnEl) btnEl.disabled = true;
-
-    const res = await fetch(`${API_BASE_URL}/users/del/${userId}`, {
-      method: "DELETE",
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-
-    if (!res.ok) {
-      const text = await safeReadError(res);
-      alert("❌ Не вдалося видалити користувача: " + (text || res.status));
-      if (btnEl) btnEl.disabled = false;
-      return;
-    }
-
-    alert("✅ Користувач видалений");
-
-    allUsers = allUsers.filter(u => u.id !== userId);
-
-    const term = (searchInput.value || "").toLowerCase();
-    const filtered = term
-      ? allUsers.filter(u =>
-          u.firstName.toLowerCase().includes(term) ||
-          u.lastName.toLowerCase().includes(term) ||
-          u.email.toLowerCase().includes(term)
-        )
-      : allUsers;
-
-    renderContacts(filtered);
-    userModal.classList.add('hidden');
-
-  } catch (e) {
-    console.error("❌ Delete user error:", e);
-    alert("❌ Помилка видалення користувача");
-    if (btnEl) btnEl.disabled = false;
-  }
-}
-
-// ===== Load departments =====
+// ===== LOAD DEPARTMENTS =====
 async function loadDepartments() {
   const data = await getJson(`${API_BASE_URL}/department/getAll`);
-  data.forEach(d => {
-    const opt = document.createElement('option');
+
+  departmentSelect.innerHTML = `<option value="">Оберіть департамент</option>`;
+  subDepartmentSelect.innerHTML = `<option value="">Усі напрями</option>`;
+  subDepartmentSelect.disabled = true;
+
+  const parents = data.filter(d => d.parentId == null);
+
+  parents.forEach(d => {
+    const opt = document.createElement("option");
     opt.value = d.id;
     opt.textContent = d.name;
     departmentSelect.appendChild(opt);
   });
 }
 
-// ===== Load users by department =====
-async function loadUsersByDepartment(depId) {
-  if (!depId) return;
+async function loadSubDepartments(parentId) {
+  subDepartmentSelect.innerHTML = `<option value="">Усі напрями</option>`;
+  subDepartmentSelect.disabled = true;
+
+  if (!parentId) return;
+
+  const children = await getJson(`${API_BASE_URL}/department/${parentId}/children`);
+  if (!children.length) return;
+
+  children.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c.subDepartment_id;
+    opt.textContent = c.subDepartmentName;
+    subDepartmentSelect.appendChild(opt);
+  });
+
+  subDepartmentSelect.disabled = false;
+}
+
+// ===== LOAD USERS =====
+async function loadUsers(depId) {
+  if (!depId) {
+    contactsList.innerHTML = "<p>Оберіть департамент</p>";
+    return;
+  }
+
   allUsers = await getJson(`${API_BASE_URL}/users/department/${depId}`);
   renderContacts(allUsers);
 }
 
-// ===== Render contacts =====
+async function reloadCurrentUsers() {
+  const id = currentSubDepartmentId || currentDepartmentId;
+  await loadUsers(id);
+}
+
+// ===== RENDER =====
 function renderContacts(users) {
-  contactsList.innerHTML = '';
+  contactsList.innerHTML = "";
+
   if (!users.length) {
-    contactsList.innerHTML = '<p>Немає користувачів</p>';
+    contactsList.innerHTML = "<p>Немає користувачів</p>";
     return;
   }
 
   users.forEach(u => {
-    const card = document.createElement('div');
-    card.className = 'contact-card';
+    const card = document.createElement("div");
+    card.className = "contact-card";
 
     card.innerHTML = `
       <div class="header">${u.firstName} ${u.lastName}</div>
       <div class="contact-actions">
-        <button class="conditions-btn" title="Фіксована ставка овертайму">⚙️</button>
-        <button class="delete-btn" title="Видалити користувача">🗑️</button>
+        <button class="change-dep-btn">🏢</button>
+        <button class="conditions-btn">⚙️</button>
+        <button class="delete-btn">🗑️</button>
       </div>
     `;
 
-    // клік по картці відкриває модалку юзера
     card.onclick = () => openUserModal(u.id);
 
-    // delete
-    const deleteBtn = card.querySelector('.delete-btn');
-    deleteBtn.addEventListener('click', (e) => {
+    card.querySelector(".delete-btn").onclick = async (e) => {
       e.stopPropagation();
-      deleteUserById(u.id, deleteBtn);
-    });
+      if (!confirm("Видалити користувача?")) return;
+      await requestJson(`${API_BASE_URL}/users/del/${u.id}`, "DELETE");
+      await reloadCurrentUsers();
+    };
 
-    // conditions
-    const condBtn = card.querySelector('.conditions-btn');
-    condBtn.addEventListener('click', (e) => {
+    card.querySelector(".conditions-btn").onclick = (e) => {
       e.stopPropagation();
-      openConditionsModal(u.id, `${u.firstName} ${u.lastName}`);
-    });
+      openConditionsModal(u.id, u.firstName + " " + u.lastName);
+    };
+
+    card.querySelector(".change-dep-btn").onclick = async (e) => {
+      e.stopPropagation();
+      openChangeDepartmentModal(u.id);
+    };
 
     contactsList.appendChild(card);
   });
 }
 
-// ===== Open user modal =====
+// ===== USER MODAL =====
 async function openUserModal(userId) {
   const user = await getJson(`${API_BASE_URL}/users/user/${userId}`);
-  if (!user) return;
-
-  modalUserName.textContent = `${user.firstName} ${user.lastName}`;
+  modalUserName.textContent = user.firstName + " " + user.lastName;
   modalUserEmail.textContent = user.email;
   modalUserPhone.textContent = user.phoneNumber;
-
-  userModal.classList.remove('hidden');
+  userModal.classList.remove("hidden");
 }
-closeUserModal.onclick = () => userModal.classList.add('hidden');
 
-// ===== Search =====
-searchInput.addEventListener('input', () => {
+closeUserModal.onclick = () => userModal.classList.add("hidden");
+
+// ===== CHANGE DEPARTMENT =====
+async function openChangeDepartmentModal(userId) {
+  userIdForDepartmentChange = userId;
+
+  const data = await getJson(`${API_BASE_URL}/department/getAll`);
+  changeDepartmentSelect.innerHTML = `<option value="">Оберіть департамент</option>`;
+
+  data.forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d.id;
+    opt.textContent = d.parentId ? "— " + d.name : d.name;
+    changeDepartmentSelect.appendChild(opt);
+  });
+
+  changeDepartmentModal.classList.remove("hidden");
+}
+
+saveChangeDepartmentBtn.onclick = async () => {
+  const newDepId = changeDepartmentSelect.value;
+  if (!newDepId) return alert("Оберіть департамент");
+
+  await requestJson(
+    `${API_BASE_URL}/users/user/${userIdForDepartmentChange}/department/${newDepId}`,
+    "PUT"
+  );
+
+  changeDepartmentModal.classList.add("hidden");
+  await reloadCurrentUsers();
+};
+
+closeChangeDepartmentModal.onclick = () => {
+  changeDepartmentModal.classList.add("hidden");
+};
+
+// ===== CONDITIONS =====
+async function openConditionsModal(userId, name) {
+  currentConditionUserId = userId;
+  conditionsSubtitle.textContent = `Користувач: ${name}`;
+  conditionsModal.classList.remove("hidden");
+  await loadConditionsList();
+}
+
+closeConditionsModal.onclick = () => {
+  conditionsModal.classList.add("hidden");
+};
+
+async function loadConditionsList() {
+  conditionsListWrap.innerHTML = "⏳ Завантаження...";
+
+  const items = await getJson(
+    `${API_BASE_URL}/user-conditions?userId=${currentConditionUserId}`
+  );
+
+  if (!items.length) {
+    conditionsListWrap.innerHTML = "Немає умов";
+    return;
+  }
+
+  conditionsListWrap.innerHTML = "";
+
+  items.forEach(c => {
+    const card = document.createElement("div");
+    card.className = "condition-card";
+
+    card.innerHTML = `
+      <div>
+        Ставка: ${Number(c.amount).toFixed(2)} грн | 
+        priority: ${c.priority} | 
+        ${c.active ? "active" : "inactive"}
+      </div>
+    `;
+
+    conditionsListWrap.appendChild(card);
+  });
+}
+
+// ===== SEARCH =====
+searchInput.addEventListener("input", () => {
   const term = searchInput.value.toLowerCase();
   const filtered = allUsers.filter(u =>
     u.firstName.toLowerCase().includes(term) ||
@@ -210,148 +268,18 @@ searchInput.addEventListener('input', () => {
   renderContacts(filtered);
 });
 
-// ==============================
-// ✅ USER CONDITIONS CRUD (SIMPLE)
-// ==============================
-
-function resetConditionForm() {
-  editingConditionId.value = "";
-  conditionFormTitle.textContent = "➕ Додати фіксовану ставку";
-  condAmount.value = "";
-  condPriority.value = "0";
-  condActive.checked = true;
-}
-
-async function openConditionsModal(userId, userName) {
-  currentConditionUserId = userId;
-  currentConditionUserName = userName;
-
-  conditionsSubtitle.textContent = `Користувач: ${userName} (userId: ${userId})`;
-  resetConditionForm();
-
-  conditionsModal.classList.remove('hidden');
-  await loadConditionsList();
-}
-
-closeConditionsModal.onclick = () => {
-  conditionsModal.classList.add('hidden');
-  resetConditionForm();
+// ===== EVENTS =====
+departmentSelect.onchange = async (e) => {
+  currentDepartmentId = e.target.value;
+  currentSubDepartmentId = null;
+  await loadSubDepartments(currentDepartmentId);
+  await loadUsers(currentDepartmentId);
 };
 
-refreshConditionsBtn.onclick = async () => {
-  await loadConditionsList();
+subDepartmentSelect.onchange = async (e) => {
+  currentSubDepartmentId = e.target.value;
+  await reloadCurrentUsers();
 };
 
-async function loadConditionsList() {
-  if (!currentConditionUserId) return;
-
-  conditionsListWrap.innerHTML = `<div class="muted">⏳ Завантаження...</div>`;
-
-  try {
-    const items = await getJson(`${API_BASE_URL}/user-conditions?userId=${currentConditionUserId}`);
-
-    if (!items || items.length === 0) {
-      conditionsListWrap.innerHTML = `<div class="muted">Немає умов для цього користувача</div>`;
-      return;
-    }
-
-    conditionsListWrap.innerHTML = "";
-
-    items.forEach(c => {
-      const card = document.createElement("div");
-      card.className = "condition-card";
-
-      const amount = Number(c.amount ?? 0).toFixed(2);
-      const pr = c.priority ?? 0;
-      const active = !!c.active;
-
-      card.innerHTML = `
-        <div class="condition-row">
-          <span class="pill green">FIXED_PER_OVERTIME</span>
-          <span class="pill">id: ${c.id}</span>
-          <span class="pill blue">ставка: ${amount} грн/год</span>
-          <span class="pill">priority: ${pr}</span>
-          <span class="pill ${active ? 'green' : 'red'}">${active ? 'active' : 'inactive'}</span>
-        </div>
-        <div class="condition-actions">
-          <button class="mini-btn edit-cond-btn" data-id="${c.id}">✏ Редагувати</button>
-          <button class="danger-btn del-cond-btn" data-id="${c.id}">🗑 Видалити</button>
-        </div>
-      `;
-
-      // edit
-      card.querySelector(".edit-cond-btn").addEventListener("click", () => {
-        editingConditionId.value = c.id;
-        conditionFormTitle.textContent = `✏ Редагувати (id: ${c.id})`;
-        condAmount.value = (c.amount == null ? "" : c.amount);
-        condPriority.value = (c.priority == null ? 0 : c.priority);
-        condActive.checked = !!c.active;
-      });
-
-      // delete
-      card.querySelector(".del-cond-btn").addEventListener("click", async () => {
-        const ok = confirm(`Видалити умову id=${c.id}?`);
-        if (!ok) return;
-        try {
-          await requestJson(`${API_BASE_URL}/user-conditions/${c.id}?userId=${currentConditionUserId}`, "DELETE");
-          await loadConditionsList();
-        } catch (e) {
-          alert("❌ Не вдалося видалити: " + e.message);
-        }
-      });
-
-      conditionsListWrap.appendChild(card);
-    });
-
-  } catch (e) {
-    console.error(e);
-    conditionsListWrap.innerHTML = `<div class="muted">❌ Помилка завантаження: ${e.message}</div>`;
-  }
-}
-
-function buildConditionPayload() {
-  const amountRaw = (condAmount.value || "").trim();
-  const priorityRaw = (condPriority.value || "").trim();
-
-  const amount = parseFloat(amountRaw);
-  if (isNaN(amount) || amount <= 0) throw new Error("Ставка (грн/год) має бути > 0");
-
-  const priority = priorityRaw === "" ? 0 : parseInt(priorityRaw, 10);
-  if (isNaN(priority)) throw new Error("Priority має бути числом");
-
-  return {
-    type: "FIXED_PER_OVERTIME",
-    amount,
-    priority,
-    active: !!condActive.checked
-  };
-}
-
-saveConditionBtn.onclick = async () => {
-  if (!currentConditionUserId) return;
-
-  try {
-    const payload = buildConditionPayload();
-    const condId = (editingConditionId.value || "").trim();
-
-    if (!condId) {
-      await requestJson(`${API_BASE_URL}/user-conditions?userId=${currentConditionUserId}`, "POST", payload);
-      alert("✅ Умову створено");
-    } else {
-      await requestJson(`${API_BASE_URL}/user-conditions/${condId}?userId=${currentConditionUserId}`, "PUT", payload);
-      alert("✅ Умову оновлено");
-    }
-
-    resetConditionForm();
-    await loadConditionsList();
-
-  } catch (e) {
-    alert("❌ " + e.message);
-  }
-};
-
-resetConditionBtn.onclick = () => resetConditionForm();
-
-// ===== Init =====
-loadDepartments();
-departmentSelect.addEventListener('change', (e) => loadUsersByDepartment(e.target.value));
+// ===== INIT =====
+document.addEventListener("DOMContentLoaded", loadDepartments);

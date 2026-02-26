@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="/css/admin/admin_contacts.css">
 </head>
 <body>
+
 <header>
   <div class="title-block">
     <h1>📇 Контакти користувачів</h1>
@@ -18,72 +19,58 @@
     <h2>Фільтри</h2>
     <hr>
 
-    <label for="searchInput">Пошук:</label>
-    <input type="text" id="searchInput" placeholder="Введіть ім'я або email">
+    <label>Пошук:</label>
+    <input type="text" id="searchInput">
 
-    <label for="departmentSelect">Департамент:</label>
+    <label>Департамент:</label>
     <select id="departmentSelect">
-      <option value="" selected>Оберіть департамент</option>
+      <option value="">Оберіть департамент</option>
+    </select>
+
+    <label>Напрями:</label>
+    <select id="subDepartmentSelect" disabled>
+      <option value="">Усі напрями</option>
     </select>
   </aside>
 
   <main class="contacts" id="contactsList">
-    <p>Оберіть фільтри для перегляду користувачів</p>
+    <p>Оберіть департамент</p>
   </main>
 </div>
 
-<!-- User modal -->
+<!-- USER MODAL -->
 <div id="userModal" class="modal hidden">
   <div class="modal-content">
     <span id="closeUserModal">&times;</span>
     <h2 id="modalUserName"></h2>
-    <p><strong>Email:</strong> <span id="modalUserEmail"></span></p>
-    <p><strong>Телефон:</strong> <span id="modalUserPhone"></span></p>
+    <p>Email: <span id="modalUserEmail"></span></p>
+    <p>Телефон: <span id="modalUserPhone"></span></p>
   </div>
 </div>
 
-<!-- Conditions modal (simple) -->
+<!-- CONDITIONS MODAL -->
 <div id="conditionsModal" class="modal hidden">
   <div class="modal-content conditions-modal">
     <span id="closeConditionsModal">&times;</span>
+    <h2>⚙️ Фіксована ставка овертайму</h2>
+    <p id="conditionsSubtitle"></p>
+    <div id="conditionsListWrap"></div>
+  </div>
+</div>
 
-    <h2 id="conditionsTitle">⚙️ Фіксована ставка овертайму</h2>
-    <p class="muted" id="conditionsSubtitle"></p>
+<!-- CHANGE DEPARTMENT MODAL (ОКРЕМО!) -->
+<div id="changeDepartmentModal" class="modal hidden">
+  <div class="modal-content">
+    <span id="closeChangeDepartmentModal">&times;</span>
+    <h3>🏢 Змінити департамент</h3>
 
-    <div class="conditions-grid">
-      <div class="conditions-list">
-        <div class="conditions-list-header">
-          <div><b>Список умов</b></div>
-          <button id="refreshConditionsBtn" class="mini-btn">🔄 Оновити</button>
-        </div>
-        <div id="conditionsListWrap"></div>
-      </div>
+    <label>Новий департамент:</label>
+    <select id="changeDepartmentSelect">
+      <option value="">Оберіть департамент</option>
+    </select>
 
-      <div class="conditions-form">
-        <b id="conditionFormTitle">➕ Додати фіксовану ставку</b>
-        <input type="hidden" id="editingConditionId" value="">
-
-        <label>Ставка (грн/год)</label>
-        <input type="number" step="0.01" id="condAmount" placeholder="наприклад 150.00" required>
-
-        <label>Пріорітет</label>
-        <input type="number" step="1" id="condPriority" placeholder="0">
-
-        <label class="row-check">
-          <input type="checkbox" id="condActive" checked>
-          Active
-        </label>
-
-        <div class="form-actions">
-          <button id="saveConditionBtn" class="primary-btn">💾 Зберегти</button>
-          <button id="resetConditionBtn" class="mini-btn">🧹 Очистити</button>
-        </div>
-
-        <p class="muted small">
-          Підказка: якщо активних умов декілька — буде братись умова з найбільшим <b>priority</b>.
-        </p>
-      </div>
-    </div>
+    <br><br>
+    <button id="saveChangeDepartmentBtn">Зберегти</button>
   </div>
 </div>
 

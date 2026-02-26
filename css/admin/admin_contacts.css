@@ -285,3 +285,30 @@ header {
     max-height: 300px;
   }
 }
+.change-dep-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 6px;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+
+.change-dep-btn:hover {
+  background: #dff0ff;
+}
+
+.change-dep-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 6px;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+
+.change-dep-btn:hover {
+  background: #dff0ff;
+}

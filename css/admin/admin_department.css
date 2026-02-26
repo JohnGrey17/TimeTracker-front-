@@ -129,7 +129,7 @@ header {
     gap: 12px;
 }
 
-/* Oкремий департамент – аккордеон */
+/* ===== ACCORDION CARD ===== */
 
 .dept-card {
     background-color: #ffecc4;
@@ -138,7 +138,8 @@ header {
     overflow: hidden;
 }
 
-/* Заголовок (натискаємо тут, щоб розгорнути) */
+/* HEADER */
+
 .dept-header {
     display: flex;
     justify-content: space-between;
@@ -168,32 +169,23 @@ header {
     cursor: pointer;
 }
 
-/* Тіло аккордеона */
+/* ===== ACCORDION BODY (FIXED VERSION) ===== */
 
 .dept-body {
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: max-height 0.25s ease, opacity 0.25s ease;
-    padding: 0 12px 0;
+    display: none;
+    padding: 0 12px 10px;
 }
 
 .dept-card.open .dept-body {
-    max-height: 300px;
-    opacity: 1;
-    padding: 0 12px 10px;
+    display: block;
     border-top: 1px solid rgba(0,0,0,0.05);
 }
+
+/* ===== UPDATE FORM ===== */
 
 .dept-body-content {
     margin-top: 10px;
     font-size: 14px;
-}
-
-/* Форма оновлення всередині департаменту */
-
-.dept-body-content p {
-    margin: 0 0 8px;
 }
 
 .dept-body-content label {
@@ -224,10 +216,47 @@ header {
     color: white;
 }
 
-/* Невелике сповіщення внизу картки (опціонально) */
-
 .status-message {
     margin-top: 8px;
     font-size: 13px;
 }
 
+/* ===== CHILDREN ===== */
+
+.sub-dept-container {
+    margin-top: 10px;
+    padding-left: 20px;
+}
+
+.sub-dept-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+}
+
+/* ===== ACTIONS ===== */
+
+.dept-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.gear-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* ===== VISUAL DIFFERENCE ===== */
+
+.parent-dept {
+    border-left: 5px solid #ff9800;
+}
+
+.sub-dept-card {
+    margin-left: 25px;
+    background: #f9f4e8;
+}
