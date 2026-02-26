@@ -95,15 +95,36 @@ function initMonths() {
 // ===== LOAD DEPARTMENTS =====
 async function loadDepartments() {
   const data = await getJson(`${API_BASE_URL}/department/getAll`);
-  departmentSelect.innerHTML = `<option value="" disabled selected>Оберіть департамент</option>`;
-  data.forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d.id;
-    opt.textContent = d.name;
-    departmentSelect.appendChild(opt);
+
+  departmentSelect.innerHTML =
+    `<option value="" disabled selected>Оберіть департамент</option>`;
+
+  // сортуємо
+  data.sort((a, b) => a.name.localeCompare(b.name, 'uk'));
+
+  // відділяємо батьків і дітей
+  const parents = data.filter(d => !d.parentId);
+  const children = data.filter(d => d.parentId);
+
+  parents.forEach(parent => {
+    // 🔹 parent
+    const parentOption = document.createElement('option');
+    parentOption.value = parent.id;
+    parentOption.textContent = parent.name;
+    parentOption.style.fontWeight = "bold";
+    departmentSelect.appendChild(parentOption);
+
+    // 🔹 children цього parent
+    children
+      .filter(child => child.parentId === parent.id)
+      .forEach(child => {
+        const childOption = document.createElement('option');
+        childOption.value = child.id;
+        childOption.textContent = `   -- ${child.name}`;
+        departmentSelect.appendChild(childOption);
+      });
   });
 }
-
 // ===== LOAD USERS =====
 async function loadUsers(departmentId) {
   const data = await getJson(`${API_BASE_URL}/users/department/${departmentId}`);

@@ -54,7 +54,43 @@
     <span id="closeConditionsModal">&times;</span>
     <h2>⚙️ Фіксована ставка овертайму</h2>
     <p id="conditionsSubtitle"></p>
-    <div id="conditionsListWrap"></div>
+
+    <div class="conditions-grid">
+
+      <!-- LEFT: LIST -->
+      <div class="conditions-list">
+        <div class="conditions-list-header">
+          <strong>Умови користувача</strong>
+          <button id="refreshConditionsBtn" class="mini-btn">🔄 Оновити</button>
+        </div>
+
+        <div id="conditionsListWrap"></div>
+      </div>
+
+      <!-- RIGHT: FORM -->
+      <div class="conditions-form">
+        <h3 id="conditionFormTitle">➕ Додати фіксовану ставку</h3>
+
+        <input type="hidden" id="editingConditionId">
+
+        <label>Ставка (грн/год):</label>
+        <input type="number" id="condAmount" step="0.01" min="0">
+
+        <label>Priority:</label>
+        <input type="number" id="condPriority" value="0">
+
+        <div class="row-check">
+          <input type="checkbox" id="condActive" checked>
+          <label for="condActive">Активна</label>
+        </div>
+
+        <div class="form-actions">
+          <button id="saveConditionBtn" class="primary-btn">💾 Зберегти</button>
+          <button id="resetConditionBtn" class="mini-btn">♻ Очистити</button>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
 

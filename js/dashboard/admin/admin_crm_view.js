@@ -109,13 +109,33 @@ function initYearMonth() {
 // ===== LOAD DEPARTMENTS =====
 async function loadDepartments() {
   const data = await getJson(`${API_BASE_URL}/department/getAll`);
+
   departmentSelect.innerHTML = `<option value="" disabled selected>Оберіть відділ</option>`;
+
+  // сортуємо
   data.sort((a, b) => a.name.localeCompare(b.name, 'uk'));
-  data.forEach(dep => {
-    const opt = document.createElement('option');
-    opt.value = dep.id;
-    opt.textContent = dep.name;
-    departmentSelect.appendChild(opt);
+
+  // 🔴 відділяємо parent і children
+  const parents = data.filter(d => !d.parentId);
+  const children = data.filter(d => d.parentId);
+
+  parents.forEach(parent => {
+    // додаємо parent
+    const parentOption = document.createElement('option');
+    parentOption.value = parent.id;
+    parentOption.textContent = parent.name;
+    parentOption.style.fontWeight = "bold";
+    departmentSelect.appendChild(parentOption);
+
+    // додаємо його дітей
+    children
+      .filter(child => child.parentId === parent.id)
+      .forEach(child => {
+        const childOption = document.createElement('option');
+        childOption.value = child.id;
+        childOption.textContent = `   --- ${child.name}`;
+        departmentSelect.appendChild(childOption);
+      });
   });
 }
 

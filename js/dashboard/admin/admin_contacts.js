@@ -24,6 +24,8 @@ const conditionsModal = document.getElementById('conditionsModal');
 const closeConditionsModal = document.getElementById('closeConditionsModal');
 const conditionsSubtitle = document.getElementById('conditionsSubtitle');
 const conditionsListWrap = document.getElementById('conditionsListWrap');
+const refreshConditionsBtn = document.getElementById('refreshConditionsBtn');
+
 const editingConditionId = document.getElementById('editingConditionId');
 const conditionFormTitle = document.getElementById('conditionFormTitle');
 const condAmount = document.getElementById('condAmount');
@@ -46,6 +48,19 @@ let userIdForDepartmentChange = null;
 let currentConditionUserId = null;
 
 // ===== HELPERS =====
+async function safeReadError(res) {
+  try {
+    const contentType = res.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const j = await res.json();
+      return j.message || j.error || j.detail || JSON.stringify(j);
+    }
+    return await res.text();
+  } catch (_) {
+    return "";
+  }
+}
+
 async function getJson(url) {
   try {
     const res = await fetch(url, {
@@ -69,16 +84,28 @@ async function requestJson(url, method, body) {
     ...(body ? { body: JSON.stringify(body) } : {})
   });
 
-  if (!res.ok) throw new Error("HTTP " + res.status);
+  if (!res.ok) {
+    const msg = await safeReadError(res);
+    throw new Error(msg || `HTTP ${res.status}`);
+  }
+
+  const ct = res.headers.get("content-type") || "";
+  if (ct.includes("application/json")) return res.json();
+  return null;
 }
 
 // ===== LOAD DEPARTMENTS =====
 async function loadDepartments() {
   const data = await getJson(`${API_BASE_URL}/department/getAll`);
 
+  if (!departmentSelect) return;
+
   departmentSelect.innerHTML = `<option value="">Оберіть департамент</option>`;
-  subDepartmentSelect.innerHTML = `<option value="">Усі напрями</option>`;
-  subDepartmentSelect.disabled = true;
+
+  if (subDepartmentSelect) {
+    subDepartmentSelect.innerHTML = `<option value="">Усі напрями</option>`;
+    subDepartmentSelect.disabled = true;
+  }
 
   const parents = data.filter(d => d.parentId == null);
 
@@ -91,6 +118,8 @@ async function loadDepartments() {
 }
 
 async function loadSubDepartments(parentId) {
+  if (!subDepartmentSelect) return;
+
   subDepartmentSelect.innerHTML = `<option value="">Усі напрями</option>`;
   subDepartmentSelect.disabled = true;
 
@@ -111,10 +140,7 @@ async function loadSubDepartments(parentId) {
 
 // ===== LOAD USERS =====
 async function loadUsers(depId) {
-  if (!depId) {
-    contactsList.innerHTML = "<p>Оберіть департамент</p>";
-    return;
-  }
+  if (!depId || !contactsList) return;
 
   allUsers = await getJson(`${API_BASE_URL}/users/department/${depId}`);
   renderContacts(allUsers);
@@ -122,11 +148,13 @@ async function loadUsers(depId) {
 
 async function reloadCurrentUsers() {
   const id = currentSubDepartmentId || currentDepartmentId;
-  await loadUsers(id);
+  if (id) await loadUsers(id);
 }
 
 // ===== RENDER =====
 function renderContacts(users) {
+  if (!contactsList) return;
+
   contactsList.innerHTML = "";
 
   if (!users.length) {
@@ -149,22 +177,22 @@ function renderContacts(users) {
 
     card.onclick = () => openUserModal(u.id);
 
-    card.querySelector(".delete-btn").onclick = async (e) => {
+    card.querySelector(".delete-btn")?.addEventListener("click", async (e) => {
       e.stopPropagation();
       if (!confirm("Видалити користувача?")) return;
       await requestJson(`${API_BASE_URL}/users/del/${u.id}`, "DELETE");
       await reloadCurrentUsers();
-    };
+    });
 
-    card.querySelector(".conditions-btn").onclick = (e) => {
+    card.querySelector(".conditions-btn")?.addEventListener("click", (e) => {
       e.stopPropagation();
       openConditionsModal(u.id, u.firstName + " " + u.lastName);
-    };
+    });
 
-    card.querySelector(".change-dep-btn").onclick = async (e) => {
+    card.querySelector(".change-dep-btn")?.addEventListener("click", (e) => {
       e.stopPropagation();
       openChangeDepartmentModal(u.id);
-    };
+    });
 
     contactsList.appendChild(card);
   });
@@ -172,6 +200,7 @@ function renderContacts(users) {
 
 // ===== USER MODAL =====
 async function openUserModal(userId) {
+  if (!userModal) return;
   const user = await getJson(`${API_BASE_URL}/users/user/${userId}`);
   modalUserName.textContent = user.firstName + " " + user.lastName;
   modalUserEmail.textContent = user.email;
@@ -179,13 +208,17 @@ async function openUserModal(userId) {
   userModal.classList.remove("hidden");
 }
 
-closeUserModal.onclick = () => userModal.classList.add("hidden");
+if (closeUserModal) {
+  closeUserModal.onclick = () => userModal.classList.add("hidden");
+}
 
 // ===== CHANGE DEPARTMENT =====
 async function openChangeDepartmentModal(userId) {
-  userIdForDepartmentChange = userId;
+  if (!changeDepartmentModal) return;
 
+  userIdForDepartmentChange = userId;
   const data = await getJson(`${API_BASE_URL}/department/getAll`);
+
   changeDepartmentSelect.innerHTML = `<option value="">Оберіть департамент</option>`;
 
   data.forEach(d => {
@@ -198,36 +231,66 @@ async function openChangeDepartmentModal(userId) {
   changeDepartmentModal.classList.remove("hidden");
 }
 
-saveChangeDepartmentBtn.onclick = async () => {
-  const newDepId = changeDepartmentSelect.value;
-  if (!newDepId) return alert("Оберіть департамент");
+if (saveChangeDepartmentBtn) {
+  saveChangeDepartmentBtn.onclick = async () => {
+    const newDepId = changeDepartmentSelect.value;
+    if (!newDepId) return alert("Оберіть департамент");
 
-  await requestJson(
-    `${API_BASE_URL}/users/user/${userIdForDepartmentChange}/department/${newDepId}`,
-    "PUT"
-  );
+    await requestJson(
+      `${API_BASE_URL}/users/user/${userIdForDepartmentChange}/department/${newDepId}`,
+      "PUT"
+    );
 
-  changeDepartmentModal.classList.add("hidden");
-  await reloadCurrentUsers();
-};
+    changeDepartmentModal.classList.add("hidden");
+    await reloadCurrentUsers();
+  };
+}
 
-closeChangeDepartmentModal.onclick = () => {
-  changeDepartmentModal.classList.add("hidden");
-};
+if (closeChangeDepartmentModal) {
+  closeChangeDepartmentModal.onclick = () => {
+    changeDepartmentModal.classList.add("hidden");
+  };
+}
 
-// ===== CONDITIONS =====
-async function openConditionsModal(userId, name) {
+// ==============================
+// FULL CONDITIONS CRUD
+// ==============================
+
+function resetConditionForm() {
+  if (!editingConditionId) return;
+  editingConditionId.value = "";
+  conditionFormTitle.textContent = "➕ Додати фіксовану ставку";
+  condAmount.value = "";
+  condPriority.value = "0";
+  condActive.checked = true;
+}
+
+async function openConditionsModal(userId, userName) {
+  if (!conditionsModal) return;
+
   currentConditionUserId = userId;
-  conditionsSubtitle.textContent = `Користувач: ${name}`;
+  conditionsSubtitle.textContent = `Користувач: ${userName}`;
+  resetConditionForm();
   conditionsModal.classList.remove("hidden");
   await loadConditionsList();
 }
 
-closeConditionsModal.onclick = () => {
-  conditionsModal.classList.add("hidden");
-};
+if (closeConditionsModal) {
+  closeConditionsModal.onclick = () => {
+    conditionsModal.classList.add("hidden");
+    resetConditionForm();
+  };
+}
+
+if (refreshConditionsBtn) {
+  refreshConditionsBtn.onclick = async () => {
+    await loadConditionsList();
+  };
+}
 
 async function loadConditionsList() {
+  if (!currentConditionUserId || !conditionsListWrap) return;
+
   conditionsListWrap.innerHTML = "⏳ Завантаження...";
 
   const items = await getJson(
@@ -247,39 +310,106 @@ async function loadConditionsList() {
 
     card.innerHTML = `
       <div>
-        Ставка: ${Number(c.amount).toFixed(2)} грн | 
-        priority: ${c.priority} | 
+        Ставка: ${Number(c.amount).toFixed(2)} грн |
+        priority: ${c.priority} |
         ${c.active ? "active" : "inactive"}
       </div>
+      <div>
+        <button class="edit-cond-btn">✏</button>
+        <button class="del-cond-btn">🗑</button>
+      </div>
     `;
+
+    card.querySelector(".edit-cond-btn")?.addEventListener("click", () => {
+      editingConditionId.value = c.id;
+      condAmount.value = c.amount;
+      condPriority.value = c.priority;
+      condActive.checked = c.active;
+    });
+
+    card.querySelector(".del-cond-btn")?.addEventListener("click", async () => {
+      if (!confirm("Видалити умову?")) return;
+      await requestJson(
+        `${API_BASE_URL}/user-conditions/${c.id}?userId=${currentConditionUserId}`,
+        "DELETE"
+      );
+      await loadConditionsList();
+    });
 
     conditionsListWrap.appendChild(card);
   });
 }
 
+function buildConditionPayload() {
+  const amount = parseFloat(condAmount.value);
+  if (isNaN(amount) || amount <= 0)
+    throw new Error("Ставка має бути > 0");
+
+  const priority = parseInt(condPriority.value || "0", 10);
+
+  return {
+    type: "FIXED_PER_OVERTIME",
+    amount,
+    priority,
+    active: !!condActive.checked
+  };
+}
+
+if (saveConditionBtn) {
+  saveConditionBtn.onclick = async () => {
+    if (!currentConditionUserId) return;
+
+    const payload = buildConditionPayload();
+    const condId = editingConditionId.value;
+
+    if (!condId) {
+      await requestJson(
+        `${API_BASE_URL}/user-conditions?userId=${currentConditionUserId}`,
+        "POST",
+        payload
+      );
+    } else {
+      await requestJson(
+        `${API_BASE_URL}/user-conditions/${condId}?userId=${currentConditionUserId}`,
+        "PUT",
+        payload
+      );
+    }
+
+    resetConditionForm();
+    await loadConditionsList();
+  };
+}
+
 // ===== SEARCH =====
-searchInput.addEventListener("input", () => {
-  const term = searchInput.value.toLowerCase();
-  const filtered = allUsers.filter(u =>
-    u.firstName.toLowerCase().includes(term) ||
-    u.lastName.toLowerCase().includes(term) ||
-    u.email.toLowerCase().includes(term)
-  );
-  renderContacts(filtered);
-});
+if (searchInput) {
+  searchInput.addEventListener("input", () => {
+    const term = searchInput.value.toLowerCase();
+    const filtered = allUsers.filter(u =>
+      u.firstName.toLowerCase().includes(term) ||
+      u.lastName.toLowerCase().includes(term) ||
+      u.email.toLowerCase().includes(term)
+    );
+    renderContacts(filtered);
+  });
+}
 
 // ===== EVENTS =====
-departmentSelect.onchange = async (e) => {
-  currentDepartmentId = e.target.value;
-  currentSubDepartmentId = null;
-  await loadSubDepartments(currentDepartmentId);
-  await loadUsers(currentDepartmentId);
-};
+if (departmentSelect) {
+  departmentSelect.onchange = async (e) => {
+    currentDepartmentId = e.target.value;
+    currentSubDepartmentId = null;
+    await loadSubDepartments(currentDepartmentId);
+    await loadUsers(currentDepartmentId);
+  };
+}
 
-subDepartmentSelect.onchange = async (e) => {
-  currentSubDepartmentId = e.target.value;
-  await reloadCurrentUsers();
-};
+if (subDepartmentSelect) {
+  subDepartmentSelect.onchange = async (e) => {
+    currentSubDepartmentId = e.target.value;
+    await reloadCurrentUsers();
+  };
+}
 
 // ===== INIT =====
 document.addEventListener("DOMContentLoaded", loadDepartments);
